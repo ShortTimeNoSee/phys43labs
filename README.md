@@ -36,10 +36,12 @@ Committing these files to the `main` branch will automatically trigger a GitHub 
 This repository contains two distinct categories of intellectual property, which are licensed differently:
 
 **1. The Source Code and Site Assets**
+
 All original HTML, CSS, JavaScript, and Markdown files (including this `README.md`), as well as any original site assets (such as favicons), are licensed under the **Liberty-ShareAlike Public License (LSA-1.0)**.
 * You may use, share, and adapt this material for any purpose.
 * If you distribute adaptations, you must license them under LSA-1.0 and include the full license text or a stable link to it. No attribution is required. No additional restrictions or DRM may be applied.
 * See the `LICENSE` file for the full text of the LSA-1.0 license.
 
 **2. The Lab Manuals (PDFs)**
+
 The `Lab X manual.pdf` files are the intellectual property of Patrick McDougall and the Butte College Department of Physics (Last updated: January 30, 2026). They are not covered by the LSA-1.0 license. They are provided here strictly for educational reference. All rights to the text, formulas, and images within those documents belong to their original authors.
