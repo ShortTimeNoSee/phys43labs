@@ -1,0 +1,910 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHYS 43 Lab 3: Thermodynamic Processes</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* Theme: Academic Green */
+            --primary: #2e7d32;
+            --primary-dark: #1b5e20;
+            --primary-light: #e8f5e9;
+            --accent: #66bb6a;
+            
+            /* UI Colors */
+            --bg-body: #f4f6f8;
+            --bg-card: #ffffff;
+            --text-main: #263238;
+            --text-muted: #607d8b;
+            --border: #cfd8dc;
+            
+            /* Status */
+            --success: #43a047;
+            --warning: #ffa000;
+            --error: #e53935;
+            
+            --radius: 8px;
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-body: #121212;
+                --bg-card: #1e1e1e;
+                --text-main: #e0e0e0;
+                --text-muted: #a0a0a0;
+                --border: #333333;
+                --primary-light: #2e2e2e;
+            }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 4rem;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: grid;
+            gap: 2rem;
+        }
+
+        /* Header */
+        header {
+            background: var(--bg-card);
+            border-bottom: 3px solid var(--primary);
+            padding: 2rem 1rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+        header h1 { color: var(--primary); margin-bottom: 0.5rem; }
+        header .meta { color: var(--text-muted); font-size: 0.9rem; }
+
+        /* Cards & Sections */
+        section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: var(--primary-light);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            border-left: 5px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-header h2 { font-size: 1.25rem; color: var(--primary-dark); }
+        @media (prefers-color-scheme: dark) {
+            .section-header h2 { color: var(--accent); }
+        }
+
+        .card-body { padding: 1.5rem; }
+
+        /* Formula Box */
+        .formula-card {
+            background: rgba(46, 125, 50, 0.05);
+            border: 1px dashed var(--primary);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+        }
+        .math-display {
+            font-family: "Times New Roman", serif;
+            font-style: italic;
+            font-size: 1.1rem;
+            text-align: center;
+            margin: 0.5rem 0;
+        }
+        .var-def { font-family: var(--font-main); font-size: 0.85rem; color: var(--text-muted); font-style: normal; display: block; text-align: center;}
+
+        /* Inputs & Tables */
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 768px) { .data-grid { grid-template-columns: 1fr; } }
+
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        
+        th {
+            background: var(--bg-body);
+            color: var(--text-muted);
+            text-align: left;
+            padding: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        td { padding: 0.5rem; border-top: 1px solid var(--border); }
+        
+        .calc-cell { color: var(--primary); font-weight: bold; font-family: monospace; }
+        
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: transparent;
+            color: var(--text-main);
+            font-family: monospace;
+            transition: border-color 0.2s;
+        }
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
+        }
+
+        .config-row {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 0.9rem;
+            background: var(--primary-light);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+        }
+
+        /* Results & badges */
+        .analysis-box {
+            background: var(--bg-body);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-top: 1rem;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+        .result-val { font-weight: 700; font-family: monospace; font-size: 1.1rem; color: var(--primary); }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-good { background: rgba(67, 160, 71, 0.15); color: var(--success); }
+        .badge-warn { background: rgba(255, 160, 0, 0.15); color: var(--warning); }
+        .badge-bad { background: rgba(229, 57, 53, 0.15); color: var(--error); }
+
+        /* Buttons */
+        .btn-toolbar { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .btn-toolbar-right { display: flex; justify-content: flex-end; margin-top: 0.5rem; }
+        .btn {
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+        .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+        .btn:hover { opacity: 0.9; }
+        .btn-danger { background: rgba(229, 57, 53, 0.1); color: var(--error); }
+
+        /* Charts */
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            margin-top: 1rem;
+            background: var(--bg-card);
+            border-radius: 4px;
+        }
+
+        .explanation {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        footer { text-align: center; margin-top: 2rem; font-size: 0.8rem; color: var(--text-muted); }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Experiment 3: Thermodynamic Processes</h1>
+        <div class="meta">PHYS 43 Lab Companion • Auto-Graphing & Analysis</div>
+        <div style="margin-top: 1rem;">
+             <button id="btn-export" class="btn btn-outline">Save Data (JSON)</button>
+             <label class="btn btn-outline">
+                Load Data
+                <input type="file" id="file-import" accept=".json" class="sr-only">
+             </label>
+             <button id="btn-reset" class="btn btn-danger">Reset</button>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <section id="part1">
+            <div class="section-header">
+                <h2>1. Charles's Law (Isobaric)</h2>
+                <span class="badge badge-good">V ∝ T</span>
+            </div>
+            <div class="card-body">
+                <div class="formula-card">
+                    <div class="math-display">V<sub>air</sub> = V<sub>offset</sub> - V<sub>read</sub></div>
+                    <span class="var-def">J-Tube: Air Bubble Volume = [Offset] - [Reading]</span>
+                </div>
+
+                <div class="data-grid">
+                    <div>
+                        <div class="config-row">
+                            <label><strong>Tube Offset (mL):</strong></label>
+                            <input type="number" id="t1_offset" value="1.00" step="0.01" style="width: 80px;" oninput="calculateAll()">
+                            <span style="font-size:0.8rem; color:var(--text-muted);">(Total capacity)</span>
+                        </div>
+
+                        <div class="btn-toolbar">
+                            <button class="btn btn-primary btn-sm" onclick="addRow('t1_body')">+ Add Reading</button>
+                            <button class="btn btn-outline btn-sm" onclick="clearTable('t1_body')">Clear</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Temp (°C)</th>
+                                        <th>Reading (mL)</th>
+                                        <th>Air Vol (mL)</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="t1_body">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="chart-wrapper">
+                            <canvas id="chart1"></canvas>
+                        </div>
+                        <div class="btn-toolbar-right">
+                            <button class="btn btn-outline btn-sm" onclick="exportHighResChart('c1', 'Charles_Law_Graph_Report.png')">📸 Export Lab Report Graph</button>
+                        </div>
+                        <div class="analysis-box">
+                            <div class="result-row">
+                                <span>Linear Fit Slope (a):</span>
+                                <span id="p1_slope" class="result-val">--</span>
+                            </div>
+                            <div class="result-row">
+                                <span>Y-Intercept (b):</span>
+                                <span id="p1_intercept" class="result-val">--</span>
+                            </div>
+                            <div class="result-row" style="border-top: 1px solid var(--border); padding-top:0.5rem;">
+                                <span>Calc. Absolute Zero:</span>
+                                <span id="p1_abs_zero" class="result-val">-- °C</span>
+                            </div>
+                            <div class="result-row">
+                                <span>% Error vs -273.15:</span>
+                                <span id="p1_error">--</span>
+                            </div>
+                            <p class="explanation" id="p1_explain">Enter data to see regression analysis.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part2">
+            <div class="section-header">
+                <h2>2. Boyle's Law (Isothermal)</h2>
+                <span class="badge badge-good">P ∝ 1/h</span>
+            </div>
+            <div class="card-body">
+                <div class="formula-card">
+                    <div class="math-display">P = b(1/h) + C</div>
+                    <span class="var-def">Plotting P (mmHg) vs 1/Height (mm⁻¹) should yield a straight line.</span>
+                </div>
+
+                <div class="data-grid">
+                    <div>
+                        <div class="btn-toolbar">
+                            <button class="btn btn-primary btn-sm" onclick="addRow('t2_body')">+ Add Reading</button>
+                            <button class="btn btn-outline btn-sm" onclick="clearTable('t2_body')">Clear</button>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Pressure (mmHg)</th>
+                                        <th>Height (mm)</th>
+                                        <th>1/h (mm⁻¹)</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="t2_body">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="chart-wrapper">
+                            <canvas id="chart2"></canvas>
+                        </div>
+                        <div class="btn-toolbar-right">
+                            <button class="btn btn-outline btn-sm" onclick="exportHighResChart('c2', 'Boyles_Law_Graph_Report.png')">📸 Export Lab Report Graph</button>
+                        </div>
+                        <div class="analysis-box">
+                            <div class="result-row">
+                                <span>Correlation (R²):</span>
+                                <span id="p2_r2" class="result-val">--</span>
+                            </div>
+                            <div class="result-row">
+                                <span>Slope (b):</span>
+                                <span id="p2_slope" class="result-val">--</span>
+                            </div>
+                             <div class="result-row">
+                                <span>Intercept (Should be ~0):</span>
+                                <span id="p2_intercept" class="result-val">--</span>
+                            </div>
+                            <p class="explanation" id="p2_explain">A high R² (>0.98) confirms Boyle's Law.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part3">
+            <div class="section-header">
+                <h2>3. Heat Engine Cycles</h2>
+                <span class="badge badge-warning">PV Diagram</span>
+            </div>
+            <div class="card-body">
+                <div class="formula-card">
+                    <div class="math-display">W = ∮ P dh ≈ Area enclosed</div>
+                    <span class="var-def">Cycle: Isobaric → Isochoric → Isothermal (or similar)</span>
+                </div>
+
+                <div class="data-grid">
+                    <div>
+                        <p style="font-size:0.85rem; margin-bottom:0.5rem;">Enter points in order (A→B→C→A)</p>
+                        <div class="btn-toolbar">
+                            <button class="btn btn-primary btn-sm" onclick="addRow('t3_body')">+ Add Point</button>
+                            <button class="btn btn-outline btn-sm" onclick="clearTable('t3_body')">Clear</button>
+                        </div>
+                        <div class="table-container" style="max-height: 300px; overflow-y:auto;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Label</th>
+                                        <th>P (mmHg)</th>
+                                        <th>Height (mm)</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="t3_body">
+                                    </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="chart-wrapper">
+                            <canvas id="chart3"></canvas>
+                        </div>
+                        <div class="btn-toolbar-right">
+                            <button class="btn btn-outline btn-sm" onclick="exportHighResChart('c3', 'PV_Diagram_Graph_Report.png')">📸 Export Lab Report Graph</button>
+                        </div>
+                        <div class="analysis-box">
+                            <div class="result-row">
+                                <span>Work (Area):</span>
+                                <span id="p3_work" class="result-val">--</span>
+                            </div>
+                            <p class="explanation" id="p3_explain">
+                                Calculated using Trapezoidal Rule integration over the closed loop.
+                                <br>Positive = Work done BY gas (CW). Negative = Work done ON gas (CCW).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        PHYS 43 Lab Tool | Matches Lab Manual 2026 | Local Processing Only
+    </footer>
+
+    <script>
+        /* --- STATE MANAGEMENT --- */
+        let charts = { c1: null, c2: null, c3: null };
+        let chartMeta = { c1: null, c2: null, c3: null }; 
+
+        const defaults = {
+            t1: [ 
+                {x:85, y:0.87}, {x:65, y:0.88}, {x:45, y:0.89}, 
+                {x:25, y:0.90}, {x:5,  y:0.91}  
+            ],
+            t2: [ {p:760, v:''}, {p:'', v:''}, {p:'', v:''} ],
+            t3: [ {l:'A', p:'', v:''}, {l:'B', p:'', v:''}, {l:'C', p:'', v:''} ]
+        };
+
+        /* --- HD REPORT GENERATOR --- */
+        function exportHighResChart(chartKey, filename) {
+            const meta = chartMeta[chartKey];
+            if (!meta) return;
+
+            // Step 1: Create Offscreen Canvas for Chart Rendering
+            const chartCanvas = document.createElement('canvas');
+            chartCanvas.width = 1920;
+            chartCanvas.height = 1080;
+            const chartCtx = chartCanvas.getContext('2d');
+
+            const originalColor = Chart.defaults.color;
+            const originalFont = Chart.defaults.font.size;
+            Chart.defaults.color = '#000000'; 
+            Chart.defaults.font.size = 24;    
+
+            const tempChart = new Chart(chartCtx, {
+                type: meta.type,
+                data: { labels: meta.labels, datasets: meta.dataSets },
+                options: {
+                    responsive: false, animation: false, devicePixelRatio: 1, 
+                    plugins: {
+                        legend: { display: meta.dataSets.length > 1, labels: { color: '#000000', font: { size: 24 } } },
+                        tooltip: { enabled: false } 
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear', position: 'bottom',
+                            title: { display: true, text: meta.xTitle, font: { weight: 'bold', size: 34 }, color: '#000000' },
+                            ticks: { color: '#000000', font: { size: 24 } },
+                            grid: { color: '#e0e0e0' } 
+                        },
+                        y: {
+                            title: { display: true, text: meta.yTitle, font: { weight: 'bold', size: 34 }, color: '#000000' },
+                            ticks: { color: '#000000', font: { size: 24 } },
+                            grid: { color: '#e0e0e0' }
+                        }
+                    }
+                },
+                plugins: [{
+                    id: 'customWhiteBackground',
+                    beforeDraw: (chart) => {
+                        const c = chart.ctx;
+                        c.save(); c.fillStyle = '#ffffff'; c.fillRect(0, 0, chart.width, chart.height); c.restore();
+                    }
+                }]
+            });
+
+            // Step 2: Grab Stats Content & Calculate Required Canvas Height
+            const stats = meta.getStats();
+            let statsHeight = stats.reduce((acc, item) => {
+                if (item.line) return acc + 30;
+                if (item.label) return acc + 70;
+                if (item.explain) return acc + (item.explain.split('\n').length * 45) + 30;
+                return acc;
+            }, 0);
+
+            // Step 3: Create Master Composite Canvas
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = 1920;
+            finalCanvas.height = 1250 + statsHeight + 80; 
+            const ctx = finalCanvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+            // Report Title
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 52px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(meta.reportTitle, finalCanvas.width / 2, 80);
+
+            // Draw Chart 
+            ctx.drawImage(chartCanvas, 0, 120);
+
+            // Draw Divider
+            let currentY = 1250;
+            ctx.beginPath();
+            ctx.moveTo(150, currentY);
+            ctx.lineTo(1770, currentY);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#2e7d32'; 
+            ctx.stroke();
+            currentY += 70;
+
+            // Step 4: Draw Info Section (Matching Screenshot Style)
+            stats.forEach(item => {
+                if (item.line) {
+                    ctx.beginPath();
+                    ctx.moveTo(200, currentY - 25);
+                    ctx.lineTo(1720, currentY - 25);
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#eeeeee';
+                    ctx.stroke();
+                    currentY += 25;
+                } else if (item.label) {
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#000000'; // Pure black text for readability
+                    ctx.font = '38px sans-serif';
+                    ctx.fillText(item.label, 200, currentY);
+
+                    ctx.textAlign = 'right';
+                    if (item.isBadge) {
+                        ctx.font = 'bold 32px sans-serif';
+                        const textWidth = ctx.measureText(item.value).width;
+                        const padX = 20, padY = 40;
+                        ctx.fillStyle = '#e8f5e9'; // Background pill
+                        ctx.fillRect(1720 - textWidth - padX*2, currentY - padY, textWidth + padX*2, 52);
+                        ctx.fillStyle = '#2e7d32'; // Green badge text
+                        ctx.fillText(item.value, 1720 - padX, currentY);
+                    } else {
+                        ctx.font = 'bold 42px monospace';
+                        ctx.fillStyle = '#2e7d32'; // Green monospace text
+                        ctx.fillText(item.value, 1720, currentY);
+                    }
+                    currentY += 70;
+                } else if (item.explain) {
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#555555';
+                    ctx.font = 'italic 34px serif'; 
+                    const lines = item.explain.split('\n');
+                    lines.forEach(l => {
+                        ctx.fillText(l.trim(), 200, currentY);
+                        currentY += 45;
+                    });
+                    currentY += 20;
+                }
+            });
+
+            // Trigger Download
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = finalCanvas.toDataURL('image/png', 1.0);
+            link.click();
+
+            // Cleanup
+            tempChart.destroy();
+            Chart.defaults.color = originalColor;
+            Chart.defaults.font.size = originalFont;
+        }
+
+        /* --- MATH HELPERS --- */
+        function linearRegression(x, y) {
+            const n = x.length;
+            if (n < 2) return null;
+            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+            for (let i = 0; i < n; i++) {
+                sumX += x[i]; sumY += y[i];
+                sumXY += (x[i] * y[i]); sumXX += (x[i] * x[i]);
+            }
+            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+            const yMean = sumY / n;
+            let ssTot = 0, ssRes = 0;
+            for(let i=0; i<n; i++) {
+                const yPred = slope * x[i] + intercept;
+                ssTot += Math.pow(y[i] - yMean, 2);
+                ssRes += Math.pow(y[i] - yPred, 2);
+            }
+            return { slope, intercept, r2: 1 - (ssRes / ssTot) };
+        }
+
+        function polygonArea(X, Y) {
+            let area = 0; let n = X.length;
+            if (n < 3) return 0;
+            for (let i = 0; i < n; i++) {
+                let j = (i + 1) % n; 
+                area += X[i] * Y[j]; area -= Y[i] * X[j];
+            }
+            return area / 2;
+        }
+
+        /* --- UI HELPERS --- */
+        function createInput(val, type='number', placeholder='') {
+            const input = document.createElement('input');
+            input.type = type; input.value = val;
+            if(type === 'number') input.step = "any";
+            input.placeholder = placeholder;
+            input.oninput = calculateAll;
+            return input;
+        }
+
+        function createDelBtn(row) {
+            const btn = document.createElement('button');
+            btn.innerHTML = '×'; btn.className = 'btn btn-danger btn-sm';
+            btn.style.padding = '0.1rem 0.5rem';
+            btn.onclick = () => { row.remove(); calculateAll(); };
+            return btn;
+        }
+
+        function addRow(tableId, data = {}) {
+            const tbody = document.getElementById(tableId);
+            const tr = document.createElement('tr');
+            
+            if (tableId === 't1_body') {
+                const td1 = tr.insertCell(); td1.appendChild(createInput(data.x ?? '', 'number', 'Temp'));
+                const td2 = tr.insertCell(); td2.appendChild(createInput(data.y ?? '', 'number', 'Reading (mL)'));
+                const td3 = tr.insertCell(); td3.innerText = '--'; td3.className = 'calc-cell';
+                const td4 = tr.insertCell(); td4.appendChild(createDelBtn(tr));
+            } else if (tableId === 't2_body') {
+                const td1 = tr.insertCell(); td1.appendChild(createInput(data.p ?? '', 'number', 'mmHg'));
+                const td2 = tr.insertCell(); td2.appendChild(createInput(data.v ?? '', 'number', 'mm'));
+                const td3 = tr.insertCell(); td3.innerText = '--'; td3.className = 'calc-cell';
+                const td4 = tr.insertCell(); td4.appendChild(createDelBtn(tr));
+            } else if (tableId === 't3_body') {
+                const td1 = tr.insertCell(); td1.appendChild(createInput(data.l ?? '', 'text', 'Label'));
+                const td2 = tr.insertCell(); td2.appendChild(createInput(data.p ?? '', 'number', 'mmHg'));
+                const td3 = tr.insertCell(); td3.appendChild(createInput(data.v ?? '', 'number', 'mm'));
+                const td4 = tr.insertCell(); td4.appendChild(createDelBtn(tr));
+            }
+            tbody.appendChild(tr);
+        }
+
+        function clearTable(id) { document.getElementById(id).innerHTML = ''; calculateAll(); }
+
+        function getData(tableId) {
+            const rows = document.getElementById(tableId).querySelectorAll('tr');
+            const data = [];
+            const t1Offset = parseFloat(document.getElementById('t1_offset').value) || 1.0;
+
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                if (tableId === 't1_body') {
+                    const temp = parseFloat(inputs[0].value);
+                    const reading = parseFloat(inputs[1].value);
+                    const calcCell = row.querySelector('.calc-cell');
+                    if (!isNaN(temp) && !isNaN(reading)) {
+                        const airVol = t1Offset - reading;
+                        calcCell.innerText = airVol.toFixed(3);
+                        data.push({x: temp, y: airVol});
+                    } else { calcCell.innerText = '--'; }
+                } else if (tableId === 't2_body') {
+                    const p = parseFloat(inputs[0].value); 
+                    const v = parseFloat(inputs[1].value); 
+                    const invCell = row.querySelector('.calc-cell');
+                    if (!isNaN(v) && v !== 0) {
+                        invCell.innerText = (1/v).toFixed(4);
+                        if(!isNaN(p)) data.push({x: 1/v, y: p}); 
+                    } else { invCell.innerText = '--'; }
+                } else if (tableId === 't3_body') {
+                    const l = inputs[0].value; const p = parseFloat(inputs[1].value); const v = parseFloat(inputs[2].value);
+                    if (!isNaN(p) && !isNaN(v)) data.push({label: l, x: v, y: p}); 
+                }
+            });
+            return data;
+        }
+
+        /* --- CALCULATION & GRAPHING CORE --- */
+        function calculateAll() {
+            calcPart1(); calcPart2(); calcPart3(); saveDataLocally();
+        }
+
+        function updateChart(key, ctxId, type, dataSets, labels, xTitle, yTitle, reportTitle, getStats) {
+            const ctx = document.getElementById(ctxId).getContext('2d');
+            const colorGrid = getComputedStyle(document.body).getPropertyValue('--border').trim();
+            const colorText = getComputedStyle(document.body).getPropertyValue('--text-main').trim();
+            
+            chartMeta[key] = { type, dataSets, labels, xTitle, yTitle, reportTitle, getStats };
+
+            if (charts[key]) charts[key].destroy();
+            Chart.defaults.color = colorText;
+
+            charts[key] = new Chart(ctx, {
+                type: type,
+                data: { labels: labels, datasets: dataSets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: dataSets.length > 1 },
+                        tooltip: { callbacks: { label: (ctx) => `(${ctx.parsed.x.toFixed(2)}, ${ctx.parsed.y.toFixed(3)})` } }
+                    },
+                    scales: {
+                        x: { type: 'linear', position: 'bottom', title: { display: true, text: xTitle, font: { weight: 'bold' } }, grid: { color: colorGrid } },
+                        y: { title: { display: true, text: yTitle, font: { weight: 'bold' } }, grid: { color: colorGrid } }
+                    }
+                }
+            });
+        }
+
+        /* --- LOGIC WITH DATA SCRAPERS --- */
+        function parseExplainText(id) {
+            const el = document.getElementById(id);
+            return el ? el.innerText : '';
+        }
+
+        function calcPart1() {
+            const data = getData('t1_body');
+            const elSlope = document.getElementById('p1_slope');
+            const elInt = document.getElementById('p1_intercept');
+            const elZero = document.getElementById('p1_abs_zero');
+            const elErr = document.getElementById('p1_error');
+            const elExplain = document.getElementById('p1_explain');
+
+            if (data.length < 2) {
+                elSlope.innerText = '--'; elInt.innerText = '--'; elZero.innerText = '--';
+                elErr.innerText = '--'; elErr.className = '';
+                updateChart('c1', 'chart1', 'scatter', [], [], 'Temperature (°C)', 'Air Volume (mL)', "Experiment 3: Charles's Law (Isobaric)", () => []);
+                return;
+            }
+
+            const x = data.map(d => d.x); 
+            const y = data.map(d => d.y); 
+            const fit = linearRegression(x, y);
+
+            if (fit) {
+                elSlope.innerText = fit.slope.toPrecision(4);
+                elInt.innerText = fit.intercept.toPrecision(4);
+                const absZero = -fit.intercept / fit.slope;
+                elZero.innerText = absZero.toFixed(2) + " °C";
+                const diff = Math.abs((absZero - (-273.15)) / (-273.15)) * 100;
+                elErr.innerText = diff.toFixed(2) + "%";
+                elErr.className = diff < 5 ? "badge badge-good" : (diff < 15 ? "badge badge-warn" : "badge badge-bad");
+                elExplain.innerHTML = `Model: Vol = ${fit.slope.toFixed(4)}T + ${fit.intercept.toFixed(4)}.<br> Solving for V=0 gives T = -${fit.intercept.toFixed(4)} / ${fit.slope.toFixed(4)}`;
+
+                updateChart('c1', 'chart1', 'scatter', [
+                    { label: 'Data', data: data, backgroundColor: '#2e7d32' },
+                    { label: 'Fit', data: [{x: Math.min(...x, absZero), y: 0}, {x: Math.max(...x), y: fit.slope * Math.max(...x) + fit.intercept}], type: 'line', borderColor: '#ffa000', borderDash: [5,5], pointRadius: 0 }
+                ], x, 'Temperature (°C)', 'Air Volume (mL)', "Experiment 3: Charles's Law (Isobaric Process)", () => [
+                    { label: 'Linear Fit Slope (a):', value: elSlope.innerText },
+                    { label: 'Y-Intercept (b):', value: elInt.innerText },
+                    { line: true },
+                    { label: 'Calc. Absolute Zero:', value: elZero.innerText },
+                    { label: '% Error vs -273.15:', value: elErr.innerText, isBadge: true },
+                    { line: true },
+                    { explain: parseExplainText('p1_explain') }
+                ]);
+            }
+        }
+
+        function calcPart2() {
+            const data = getData('t2_body'); 
+            const elR2 = document.getElementById('p2_r2');
+            const elSlope = document.getElementById('p2_slope');
+            const elInt = document.getElementById('p2_intercept');
+
+            if (data.length < 2) {
+                elR2.innerText = '--';
+                updateChart('c2', 'chart2', 'scatter', [], [], '1 / Height (mm⁻¹)', 'Pressure (mmHg)', "Experiment 3: Boyle's Law", () => []);
+                return;
+            }
+
+            const x = data.map(d => d.x);
+            const y = data.map(d => d.y);
+            const fit = linearRegression(x, y);
+
+            if(fit) {
+                elR2.innerText = fit.r2.toFixed(4);
+                elSlope.innerText = fit.slope.toPrecision(4);
+                elInt.innerText = fit.intercept.toPrecision(3);
+
+                updateChart('c2', 'chart2', 'scatter', [
+                    { label: 'Data', data: data, backgroundColor: '#2e7d32' },
+                    { label: 'Linear Fit', data: [{x: Math.min(...x), y: fit.slope * Math.min(...x) + fit.intercept}, {x: Math.max(...x), y: fit.slope * Math.max(...x) + fit.intercept}], type: 'line', borderColor: '#ffa000', pointRadius: 0 }
+                ], x, '1 / Height (mm⁻¹)', 'Pressure (mmHg)', "Experiment 3: Boyle's Law (Isothermal Process)", () => [
+                    { label: 'Correlation (R²):', value: elR2.innerText },
+                    { label: 'Slope (b):', value: elSlope.innerText },
+                    { label: 'Intercept (Should be ~0):', value: elInt.innerText },
+                    { line: true },
+                    { explain: parseExplainText('p2_explain') }
+                ]);
+            }
+        }
+
+        function calcPart3() {
+            const data = getData('t3_body'); 
+            const elWork = document.getElementById('p3_work');
+            
+            if (data.length < 3) {
+                elWork.innerText = '--';
+                updateChart('c3', 'chart3', 'scatter', [], [], 'Height (mm)', 'Pressure (mmHg)', "Experiment 3: PV Diagram", () => []);
+                return;
+            }
+
+            const V = data.map(d => d.x);
+            const P = data.map(d => d.y);
+            elWork.innerText = Math.abs(polygonArea(V, P)).toFixed(2) + " (Arbitrary Units)";
+
+            updateChart('c3', 'chart3', 'scatter', [
+                { label: 'Cycle', data: [...data, data[0]], showLine: true, borderColor: '#2e7d32', backgroundColor: 'rgba(46, 125, 50, 0.2)', fill: true }
+            ], V, 'Height (mm)', 'Pressure (mmHg)', "Experiment 3: Heat Engine Cycles (PV Diagram)", () => [
+                { label: 'Work (Area):', value: elWork.innerText },
+                { line: true },
+                { explain: parseExplainText('p3_explain') }
+            ]);
+        }
+
+        /* --- DATA PERSISTENCE --- */
+        function saveDataLocally() {
+            const t1 = [], t2 = [], t3 = [];
+            document.querySelectorAll('#t1_body tr').forEach(r => { const i = r.querySelectorAll('input'); t1.push({x: i[0].value, y: i[1].value}); });
+            document.querySelectorAll('#t2_body tr').forEach(r => { const i = r.querySelectorAll('input'); t2.push({p: i[0].value, v: i[1].value}); });
+            document.querySelectorAll('#t3_body tr').forEach(r => { const i = r.querySelectorAll('input'); t3.push({l: i[0].value, p: i[1].value, v: i[2].value}); });
+            localStorage.setItem('phys43_lab3_data', JSON.stringify({ t1, t1Offset: document.getElementById('t1_offset').value, t2, t3 }));
+        }
+
+        function loadData() {
+            const stored = localStorage.getItem('phys43_lab3_data');
+            document.getElementById('t1_body').innerHTML = '';
+            document.getElementById('t2_body').innerHTML = '';
+            document.getElementById('t3_body').innerHTML = '';
+
+            if (stored) {
+                const data = JSON.parse(stored);
+                if(data.t1Offset) document.getElementById('t1_offset').value = data.t1Offset;
+                data.t1.forEach(d => addRow('t1_body', d));
+                data.t2.forEach(d => addRow('t2_body', d));
+                data.t3.forEach(d => addRow('t3_body', d));
+            } else {
+                defaults.t1.forEach(d => addRow('t1_body', d));
+                defaults.t2.forEach(d => addRow('t2_body', d));
+                defaults.t3.forEach(d => addRow('t3_body', d));
+            }
+            calculateAll();
+        }
+
+        /* --- EVENT LISTENERS --- */
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            if(confirm("Clear all data and reset tables?")) { localStorage.removeItem('phys43_lab3_data'); loadData(); }
+        });
+
+        document.getElementById('btn-export').addEventListener('click', () => {
+            const stored = localStorage.getItem('phys43_lab3_data');
+            if(!stored) return alert("No data.");
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([stored], {type: 'application/json'}));
+            a.download = 'phys43_lab3_thermo.json';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        });
+
+        document.getElementById('file-import').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try { localStorage.setItem('phys43_lab3_data', JSON.stringify(JSON.parse(ev.target.result))); loadData(); } 
+                catch(err) { alert("Invalid JSON"); }
+            };
+            reader.readAsText(file);
+        });
+
+        window.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>

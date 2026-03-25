@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHYS 43 Lab 5: Reflection and Refraction</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* Theme: Optics Neon/Dark */
+            --primary: #00e5ff;
+            --primary-dark: #00b3cc;
+            --primary-light: #262a33;
+            --accent: #b056ff;
+            --accent-light: #d6a1ff;
+
+            --bg-body: #12141a;
+            --bg-card: #1c1e26;
+            --bg-table: #232730;
+            --text-main: #d1d5db;
+            --text-heading: #ffffff;
+            --text-muted: #8b949e;
+            --border: #374151;
+            --input-bg: #0d1117;
+
+            --success: #3fb950;
+            --warning: #d29922;
+            --error: #f85149;
+
+            --radius: 10px;
+            --shadow: 0 8px 16px rgba(0,0,0,0.3);
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 4rem;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: grid;
+            gap: 2rem;
+        }
+
+        /* --- Header --- */
+        header {
+            background: var(--bg-card);
+            border-bottom: 4px solid var(--accent);
+            padding: 2rem 1rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        header h1 { color: var(--text-heading); margin-bottom: 0.5rem; letter-spacing: 1px; }
+        header .meta { color: var(--text-muted); font-size: 0.95rem; max-width: 700px; margin: 0 auto 1.5rem auto; }
+
+        /* --- Sections & Cards --- */
+        section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: var(--primary-light);
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            border-left: 5px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-header h2 { font-size: 1.3rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .card-body { padding: 1.5rem; }
+
+        /* --- Formula & Info Blocks --- */
+        .formula-card {
+            background: var(--primary-light);
+            border: 1px dashed var(--border);
+            border-left: 3px solid var(--accent);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .math-display {
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            text-align: center;
+            color: var(--text-heading);
+        }
+
+        .var-def { 
+            font-size: 0.85rem; 
+            color: var(--text-muted); 
+            display: block; 
+            text-align: center; 
+            margin-top: 0.3rem;
+        }
+
+        /* --- Grid Layouts --- */
+        .data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1050px) { .data-grid { grid-template-columns: 1fr; } }
+
+        /* --- Tables --- */
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            background: var(--bg-table);
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+
+        th {
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text-main);
+            text-align: center;
+            padding: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td { padding: 0.5rem; border-bottom: 1px solid var(--border); text-align: center; }
+        .calc-cell { color: var(--primary); font-weight: bold; font-family: var(--font-mono); }
+        .calc-cell-accent { color: var(--accent-light); font-weight: bold; font-family: var(--font-mono); }
+
+        /* --- Inputs --- */
+        input[type="number"], select {
+            width: 100%;
+            min-width: 60px;
+            padding: 0.4rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--input-bg);
+            color: var(--text-heading);
+            font-family: var(--font-mono);
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.2);
+        }
+
+        /* --- Buttons --- */
+        .btn-toolbar { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem;}
+        .btn-toolbar-left { justify-content: flex-start; }
+        .btn-toolbar-right { justify-content: flex-end; }
+
+        .btn {
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .btn-primary { background: var(--primary); color: #000; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+        .btn-accent { background: var(--accent); color: #fff; }
+        .btn-accent:hover { background: #9d3bf0; transform: translateY(-1px); }
+
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-outline:hover { background: var(--border); color: #fff; }
+
+        .btn-danger { background: rgba(248, 81, 73, 0.1); color: var(--error); border: 1px solid transparent;}
+        .btn-danger:hover { background: rgba(248, 81, 73, 0.2); }
+
+        .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.75rem; border-radius: 4px; }
+
+        /* --- Analysis & Stats --- */
+        .analysis-box {
+            background: var(--primary-light);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 1rem;
+            border-radius: var(--radius);
+            text-align: center;
+            border: 1px solid var(--border);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .stat-card span { display: block; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
+        .stat-card strong { font-size: 1.4rem; color: var(--text-heading); font-family: var(--font-mono); margin-top: 0.25rem; display: block;}
+        .stat-card .primary-val { color: var(--primary); }
+        .stat-card .accent-val { color: var(--accent-light); }
+
+        /* --- Badges --- */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-good { background: rgba(63, 185, 80, 0.15); color: var(--success); border: 1px solid rgba(63, 185, 80, 0.3); }
+        .badge-warn { background: rgba(210, 153, 34, 0.15); color: var(--warning); border: 1px solid rgba(210, 153, 34, 0.3); }
+        .badge-bad { background: rgba(248, 81, 73, 0.15); color: var(--error); border: 1px solid rgba(248, 81, 73, 0.3); }
+
+        /* --- Charts --- */
+        .chart-wrapper {
+            position: relative;
+            height: 320px;
+            width: 100%;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            margin-top: 1rem;
+            flex-grow: 1;
+        }
+
+        .chart-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-table);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+
+        /* --- Utilities --- */
+        .flex-between { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-top: 1px solid var(--border); }
+        .mt-1 { margin-top: 1rem; }
+        .mb-1 { margin-bottom: 1rem; }
+        .text-center { text-align: center; }
+        footer { text-align: center; margin-top: 3rem; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 1.5rem; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Experiment 5: Reflection & Refraction</h1>
+        <p class="meta">
+            Interactive suite for computing index of refraction via Snell's Law, Critical Angles, and Malus's Law for Polarization.
+        </p>
+        <div class="btn-toolbar">
+             <button id="btn-export" class="btn btn-outline">📥 Export Data (JSON)</button>
+             <label class="btn btn-outline">
+                📤 Load Data
+                <input type="file" id="file-import" accept=".json" class="sr-only">
+             </label>
+             <button id="btn-reset" class="btn btn-danger">✖ Reset All</button>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <section id="part1">
+            <div class="section-header">
+                <h2>1. Law of Reflection</h2>
+                <span class="badge badge-good">θ<sub>i</sub> = θ<sub>r</sub></span>
+            </div>
+            <div class="card-body">
+                <div class="formula-card" style="grid-template-columns: 1fr;">
+                    <div>
+                        <div class="math-display">θ<sub>incident</sub> = θ<sub>reflected</sub></div>
+                        <span class="var-def">Plane Mirror Reflection</span>
+                    </div>
+                </div>
+
+                <div class="table-container" style="max-width: 600px; margin: 0 auto;">
+                    <table id="refl-table">
+                        <thead>
+                            <tr>
+                                <th>Incoming Angle (θ<sub>i</sub>)</th>
+                                <th>Outgoing Angle (θ<sub>r</sub>)</th>
+                                <th>% Difference</th>
+                            </tr>
+                        </thead>
+                        <tbody id="refl-body">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="part2">
+            <div class="section-header">
+                <h2>2. Refraction & Snell's Law</h2>
+                <span class="badge badge-good">n<sub>1</sub>sin(θ<sub>1</sub>) = n<sub>2</sub>sin(θ<sub>2</sub>)</span>
+            </div>
+            <div class="card-body">
+                <div class="formula-card">
+                    <div>
+                        <div class="math-display">sin(θ<sub>1</sub>) = n<sub>acrylic</sub> &middot; sin(θ<sub>2</sub>)</div>
+                        <span class="var-def">Assuming air n<sub>1</sub> ≈ 1.00</span>
+                    </div>
+                    <div>
+                        <div class="math-display">n<sub>acrylic</sub> = 1 / sin(θ<sub>c</sub>)</div>
+                        <span class="var-def">Critical Angle (Internal Reflection)</span>
+                    </div>
+                </div>
+
+                <div class="data-grid">
+                    <div>
+                        <h3 class="mb-1 text-center" style="color: var(--text-heading); font-size: 1.1rem;">A. Ray Table Data</h3>
+                        <div class="btn-toolbar btn-toolbar-left">
+                            <button class="btn btn-primary btn-sm" onclick="addRefractionRow()">+ Add Angle</button>
+                            <button class="btn btn-outline btn-sm" onclick="clearTable('refr-body'); updateRefraction();">Clear</button>
+                        </div>
+                        <div class="table-container">
+                            <table id="refr-table">
+                                <thead>
+                                    <tr>
+                                        <th>θ<sub>i</sub> (deg)</th>
+                                        <th>θ<sub>r</sub> (deg)</th>
+                                        <th>sin(θ<sub>i</sub>)</th>
+                                        <th>sin(θ<sub>r</sub>)</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="refr-body">
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div style="background: var(--bg-table); border: 1px solid var(--border); padding: 1rem; border-radius: var(--radius); margin-top: 1.5rem;">
+                            <h3 style="color: var(--accent); margin-bottom: 0.5rem; font-size: 1rem;">B. Critical Angle Measurement</h3>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div>
+                                    <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.2rem;">Measured θ<sub>c</sub> (°)</label>
+                                    <input type="number" id="crit-angle" step="any" oninput="calcCritical()">
+                                </div>
+                                <div style="flex-grow: 1; text-align: right;">
+                                    <span style="font-size: 0.85rem; color: var(--text-muted);">Calculated Index (n):</span><br>
+                                    <strong id="crit-n" style="font-size: 1.5rem; color: var(--accent-light); font-family: var(--font-mono);">--</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--bg-table); border: 1px solid var(--border); padding: 1rem; border-radius: var(--radius); margin-top: 1rem;">
+                            <h3 style="color: var(--primary); margin-bottom: 0.5rem; font-size: 1rem;">C. Dispersion (at θ<sub>i</sub> = 60°)</h3>
+                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.8rem; color: var(--text-muted);">Red θ<sub>r</sub> (°)</label>
+                                    <input type="number" id="disp-red" step="any" oninput="calcDispersion()">
+                                </div>
+                                <div style="width: 80px; text-align: center;">
+                                    <strong id="disp-n-red" style="color: #ff6b6b; font-family: var(--font-mono);">--</strong>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.8rem; color: var(--text-muted);">Blue/Violet θ<sub>r</sub> (°)</label>
+                                    <input type="number" id="disp-blue" step="any" oninput="calcDispersion()">
+                                </div>
+                                <div style="width: 80px; text-align: center;">
+                                    <strong id="disp-n-blue" style="color: #79c0ff; font-family: var(--font-mono);">--</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-box">
+                        <div class="chart-wrapper">
+                            <canvas id="refrChart"></canvas>
+                        </div>
+                        <div class="btn-toolbar btn-toolbar-right mt-1">
+                            <button class="btn btn-outline btn-sm" onclick="exportHighResChart('c1', 'Refraction_Snells_Law.png')">📸 Export Graph</button>
+                        </div>
+
+                        <div class="mt-1">
+                            <div class="flex-between">
+                                <span>Linear Regression Slope (n):</span>
+                                <strong id="refr-slope" class="calc-cell" style="font-size: 1.2rem;">--</strong>
+                            </div>
+                            <div class="flex-between">
+                                <span>Correlation (R²):</span>
+                                <strong id="refr-r2" class="calc-cell-accent">--</strong>
+                            </div>
+                            <div class="flex-between" style="border-bottom: none;">
+                                <span>% Error from Accepted (1.49):</span>
+                                <span id="refr-error" class="badge">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part3">
+            <div class="section-header">
+                <h2>3. Polarization</h2>
+                <span class="badge badge-warning">I = I<sub>0</sub> cos²(θ)</span>
+            </div>
+            <div class="card-body">
+                <div class="formula-card">
+                    <div>
+                        <div class="math-display">E = E<sub>0</sub> cos(θ)</div>
+                        <span class="var-def">Amplitude Relationship</span>
+                    </div>
+                    <div>
+                        <div class="math-display">I = I<sub>0</sub> cos²(θ)</div>
+                        <span class="var-def">Malus's Law (Intensity)</span>
+                    </div>
+                </div>
+
+                <div class="data-grid">
+                    <div>
+                        <div class="btn-toolbar btn-toolbar-left mb-1">
+                            <button class="btn btn-accent btn-sm" onclick="addPolRow()">+ Add Angle</button>
+                            <button class="btn btn-outline btn-sm" onclick="populatePolDefaults()">Load 0-180° Range</button>
+                            <button class="btn btn-outline btn-sm" onclick="clearTable('pol-body'); updatePolarization();">Clear</button>
+                        </div>
+                        <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+                            <table id="pol-table">
+                                <thead>
+                                    <tr>
+                                        <th>Angle θ (°)</th>
+                                        <th>Signal</th>
+                                        <th>cos(θ)</th>
+                                        <th>cos²(θ)</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pol-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="analysis-box">
+                        <div class="chart-controls">
+                            <span style="font-size: 0.9rem; font-weight: bold; color: var(--text-heading);">Graph X-Axis:</span>
+                            <select id="pol-xaxis" style="width: 200px; padding: 0.2rem;" onchange="updatePolarization()">
+                                <option value="angle">Angle θ (Degrees)</option>
+                                <option value="cos">cos(θ)</option>
+                                <option value="cos2" selected>cos²(θ)</option>
+                            </select>
+                        </div>
+
+                        <div class="chart-wrapper" style="margin-top: 0; height: 280px;">
+                            <canvas id="polChart"></canvas>
+                        </div>
+                        <div class="btn-toolbar btn-toolbar-right mt-1">
+                            <button class="btn btn-outline btn-sm" onclick="exportHighResChart('c2', 'Polarization_Graph.png')">📸 Export Graph</button>
+                        </div>
+
+                        <div class="mt-1" style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border);">
+                            <h4 style="color: var(--accent); margin-bottom: 0.5rem; text-align: center;">Linearity Comparison</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: center;">
+                                <div>
+                                    <span class="var-def">Signal vs cos(θ) R²</span>
+                                    <strong id="pol-r2-cos" style="color: var(--text-heading); font-family: var(--font-mono);">--</strong>
+                                </div>
+                                <div>
+                                    <span class="var-def">Signal vs cos²(θ) R²</span>
+                                    <strong id="pol-r2-cos2" style="color: var(--text-heading); font-family: var(--font-mono);">--</strong>
+                                </div>
+                            </div>
+                            <p style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 0.8rem; font-style: italic;">
+                                The higher R² value dictates whether the sensor measures Amplitude (E-field) or Power (Intensity).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        PHYS 43 Lab Companion | Computations execute locally in your browser. | V1.0 (Lab 5)
+    </footer>
+
+    <script>
+        // --- STATE & INITIALIZATION ---
+        let charts = { refr: null, pol: null };
+        let chartMeta = { c1: null, c2: null };
+
+        const DEFAULTS = {
+            refl: [10, 30, 50, 70, 80],
+            refr: [10, 20, 30, 40, 50, 60]
+        };
+
+        // --- MATH UTILS ---
+        function deg2rad(deg) { return deg * Math.PI / 180; }
+        function linearFit(x, y) {
+            const n = x.length;
+            if (n < 2) return null;
+            let sumX=0, sumY=0, sumXY=0, sumXX=0;
+            for(let i=0; i<n; i++) {
+                sumX += x[i]; sumY += y[i];
+                sumXY += x[i]*y[i]; sumXX += x[i]*x[i];
+            }
+            const slope = (n*sumXY - sumX*sumY) / (n*sumXX - sumX*sumX);
+            const intercept = (sumY - slope*sumX) / n;
+            const yMean = sumY / n;
+            let ssTot=0, ssRes=0;
+            for(let i=0; i<n; i++) {
+                ssTot += Math.pow(y[i] - yMean, 2);
+                ssRes += Math.pow(y[i] - (slope*x[i] + intercept), 2);
+            }
+            return { slope, intercept, r2: 1 - (ssRes/ssTot) };
+        }
+
+        // --- UI HELPERS ---
+        function createInput(val, placeholder='', oninputFn) {
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = 'any';
+            input.value = val;
+            input.placeholder = placeholder;
+            input.oninput = oninputFn;
+            return input;
+        }
+
+        function createDelBtn(row, updateFn) {
+            const btn = document.createElement('button');
+            btn.innerHTML = '×';
+            btn.className = 'btn btn-danger btn-sm';
+            btn.onclick = () => { row.remove(); updateFn(); };
+            return btn;
+        }
+
+        function clearTable(tbodyId) {
+            document.getElementById(tbodyId).innerHTML = '';
+        }
+
+        // --- PART 1: REFLECTION ---
+        function initReflection() {
+            const tbody = document.getElementById('refl-body');
+            tbody.innerHTML = '';
+            DEFAULTS.refl.forEach(angle => {
+                const tr = tbody.insertRow();
+                tr.insertCell().appendChild(createInput(angle, 'θ_i', updateReflection));
+                tr.insertCell().appendChild(createInput('', 'θ_r', updateReflection));
+                const diffCell = tr.insertCell();
+                diffCell.className = 'calc-cell';
+                diffCell.innerText = '--';
+            });
+            updateReflection();
+        }
+
+        function updateReflection() {
+            const rows = document.getElementById('refl-body').rows;
+            for(let row of rows) {
+                const inputs = row.querySelectorAll('input');
+                const ti = parseFloat(inputs[0].value);
+                const tr = parseFloat(inputs[1].value);
+                const diffCell = row.cells[2];
+                if(!isNaN(ti) && !isNaN(tr) && ti !== 0) {
+                    const pct = Math.abs((ti - tr) / ti) * 100;
+                    diffCell.innerText = pct.toFixed(2) + '%';
+                } else {
+                    diffCell.innerText = '--';
+                }
+            }
+            saveLocal();
+        }
+
+        // --- PART 2: REFRACTION ---
+        function addRefractionRow(ti='', tr='') {
+            const tbody = document.getElementById('refr-body');
+            const row = tbody.insertRow();
+            row.insertCell().appendChild(createInput(ti, 'θ_i', updateRefraction));
+            row.insertCell().appendChild(createInput(tr, 'θ_r', updateRefraction));
+            const c1 = row.insertCell(); c1.className = 'calc-cell'; c1.innerText = '--';
+            const c2 = row.insertCell(); c2.className = 'calc-cell-accent'; c2.innerText = '--';
+            row.insertCell().appendChild(createDelBtn(row, updateRefraction));
+            updateRefraction();
+        }
+
+        function initRefraction() {
+            clearTable('refr-body');
+            DEFAULTS.refr.forEach(angle => addRefractionRow(angle, ''));
+        }
+
+        function updateRefraction() {
+            const rows = document.getElementById('refr-body').rows;
+            const dataPts = [];
+
+            for(let row of rows) {
+                const inputs = row.querySelectorAll('input');
+                const ti = parseFloat(inputs[0].value);
+                const tr = parseFloat(inputs[1].value);
+                if(!isNaN(ti)) row.cells[2].innerText = Math.sin(deg2rad(ti)).toFixed(4); else row.cells[2].innerText = '--';
+                if(!isNaN(tr)) row.cells[3].innerText = Math.sin(deg2rad(tr)).toFixed(4); else row.cells[3].innerText = '--';
+
+                if(!isNaN(ti) && !isNaN(tr)) {
+                    // Snell's Law Plot: Y = sin(θ_1), X = sin(θ_2)  => slope = n_acrylic
+                    dataPts.push({ y: Math.sin(deg2rad(ti)), x: Math.sin(deg2rad(tr)) });
+                }
+            }
+
+            const elSlope = document.getElementById('refr-slope');
+            const elR2 = document.getElementById('refr-r2');
+            const elErr = document.getElementById('refr-error');
+
+            if(dataPts.length >= 2) {
+                const fit = linearFit(dataPts.map(d=>d.x), dataPts.map(d=>d.y));
+                if(fit) {
+                    elSlope.innerText = fit.slope.toFixed(4);
+                    elR2.innerText = fit.r2.toFixed(4);
+
+                    const err = Math.abs((fit.slope - 1.49)/1.49) * 100;
+                    elErr.innerText = err.toFixed(2) + '%';
+                    elErr.className = err < 5 ? 'badge badge-good' : (err < 10 ? 'badge badge-warn' : 'badge badge-bad');
+
+                    drawRefrChart(dataPts, fit);
+                }
+            } else {
+                elSlope.innerText = '--'; elR2.innerText = '--'; elErr.innerText = '--'; elErr.className = 'badge';
+                drawRefrChart([], null);
+            }
+            saveLocal();
+        }
+
+        function calcCritical() {
+            const crit = parseFloat(document.getElementById('crit-angle').value);
+            const out = document.getElementById('crit-n');
+            if(!isNaN(crit) && crit > 0 && crit < 90) {
+                out.innerText = (1 / Math.sin(deg2rad(crit))).toFixed(4);
+            } else {
+                out.innerText = '--';
+            }
+            saveLocal();
+        }
+
+        function calcDispersion() {
+            const red = parseFloat(document.getElementById('disp-red').value);
+            const blue = parseFloat(document.getElementById('disp-blue').value);
+            const sin60 = Math.sin(deg2rad(60));
+
+            document.getElementById('disp-n-red').innerText = (!isNaN(red) && red>0) ? (sin60 / Math.sin(deg2rad(red))).toFixed(4) : '--';
+            document.getElementById('disp-n-blue').innerText = (!isNaN(blue) && blue>0) ? (sin60 / Math.sin(deg2rad(blue))).toFixed(4) : '--';
+            saveLocal();
+        }
+
+        function drawRefrChart(data, fit) {
+            const ctx = document.getElementById('refrChart').getContext('2d');
+            const colorGrid = getComputedStyle(document.body).getPropertyValue('--border').trim();
+            const colorPrim = getComputedStyle(document.body).getPropertyValue('--primary').trim();
+            const colorAcc = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+
+            if (charts.refr) charts.refr.destroy();
+            Chart.defaults.color = getComputedStyle(document.body).getPropertyValue('--text-main').trim();
+
+            let datasets = [{ label: 'Data', data: data, type: 'scatter', backgroundColor: colorPrim, pointRadius: 5 }];
+            if(fit && data.length > 0) {
+                const xMax = Math.max(...data.map(d=>d.x));
+                const lineData = [ {x: 0, y: fit.intercept}, {x: xMax, y: fit.slope*xMax + fit.intercept} ];
+                datasets.push({ label: 'Fit', data: lineData, type: 'line', borderColor: colorAcc, borderDash: [5,5], pointRadius: 0 });
+            }
+
+            charts.refr = new Chart(ctx, {
+                data: { datasets: datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: fit !== null } },
+                    scales: {
+                        x: { type: 'linear', title: { display: true, text: 'sin(θ_r)' }, grid: { color: colorGrid } },
+                        y: { title: { display: true, text: 'sin(θ_i)' }, grid: { color: colorGrid } }
+                    }
+                }
+            });
+
+            // Metadata for export
+            chartMeta['c1'] = {
+                type: 'scatter',
+                dataSets: datasets,
+                labels: [],
+                xTitle: 'sin(θ_r) [Refracted]',
+                yTitle: 'sin(θ_i) [Incident]',
+                reportTitle: "Experiment 5: Snell's Law",
+                getStats: () => [
+                    { label: 'Slope (Index of Refraction):', value: document.getElementById('refr-slope').innerText },
+                    { label: 'Correlation (R²):', value: document.getElementById('refr-r2').innerText },
+                    { line: true },
+                    { label: 'Accepted Value:', value: '1.49' },
+                    { label: '% Error:', value: document.getElementById('refr-error').innerText, isBadge: true }
+                ]
+            };
+        }
+
+        // --- PART 3: POLARIZATION ---
+        function addPolRow(ang='', sig='') {
+            const tbody = document.getElementById('pol-body');
+            const row = tbody.insertRow();
+            row.insertCell().appendChild(createInput(ang, 'Deg', updatePolarization));
+            row.insertCell().appendChild(createInput(sig, 'Signal', updatePolarization));
+            row.insertCell().className = 'calc-cell';
+            row.insertCell().className = 'calc-cell-accent';
+            row.insertCell().appendChild(createDelBtn(row, updatePolarization));
+        }
+
+        function populatePolDefaults() {
+            clearTable('pol-body');
+            for(let i=0; i<=180; i+=10) addPolRow(i, '');
+            updatePolarization();
+        }
+
+        function updatePolarization() {
+            const rows = document.getElementById('pol-body').rows;
+            const data_angle = [];
+            const data_cos = [];
+            const data_cos2 = [];
+
+            for(let row of rows) {
+                const inputs = row.querySelectorAll('input');
+                const ang = parseFloat(inputs[0].value);
+                const sig = parseFloat(inputs[1].value);
+
+                const c_cos = row.cells[2];
+                const c_cos2 = row.cells[3];
+
+                if(!isNaN(ang)) {
+                    const rad = deg2rad(ang);
+                    const cosV = Math.cos(rad);
+                    const cos2V = cosV * cosV;
+                    c_cos.innerText = cosV.toFixed(4);
+                    c_cos2.innerText = cos2V.toFixed(4);
+
+                    if(!isNaN(sig)) {
+                        data_angle.push({x: ang, y: sig});
+                        data_cos.push({x: cosV, y: sig});
+                        data_cos2.push({x: cos2V, y: sig});
+                    }
+                } else {
+                    c_cos.innerText = '--'; c_cos2.innerText = '--';
+                }
+            }
+
+            // Calc R-squared for both to compare
+            const elR2Cos = document.getElementById('pol-r2-cos');
+            const elR2Cos2 = document.getElementById('pol-r2-cos2');
+
+            let fitCos = null, fitCos2 = null;
+
+            if(data_angle.length >= 2) {
+                fitCos = linearFit(data_cos.map(d=>d.x), data_cos.map(d=>d.y));
+                fitCos2 = linearFit(data_cos2.map(d=>d.x), data_cos2.map(d=>d.y));
+
+                elR2Cos.innerText = fitCos ? fitCos.r2.toFixed(4) : '--';
+                elR2Cos2.innerText = fitCos2 ? fitCos2.r2.toFixed(4) : '--';
+
+                // Highlight the better fit
+                if(fitCos && fitCos2) {
+                    if(fitCos.r2 > fitCos2.r2) {
+                        elR2Cos.style.color = 'var(--success)'; elR2Cos2.style.color = 'var(--text-heading)';
+                    } else {
+                        elR2Cos2.style.color = 'var(--success)'; elR2Cos.style.color = 'var(--text-heading)';
+                    }
+                }
+            } else {
+                elR2Cos.innerText = '--'; elR2Cos2.innerText = '--';
+                elR2Cos.style.color = 'var(--text-heading)'; elR2Cos2.style.color = 'var(--text-heading)';
+            }
+
+            drawPolChart(data_angle, data_cos, data_cos2, fitCos, fitCos2);
+            saveLocal();
+        }
+
+        function drawPolChart(dAng, dCos, dCos2, fitCos, fitCos2) {
+            const ctx = document.getElementById('polChart').getContext('2d');
+            const colorGrid = getComputedStyle(document.body).getPropertyValue('--border').trim();
+            const mode = document.getElementById('pol-xaxis').value;
+
+            if(charts.pol) charts.pol.destroy();
+
+            let plotData, xLabel, fitData = null;
+
+            if(mode === 'angle') {
+                plotData = dAng; xLabel = 'Angle (Degrees)';
+                // No linear fit line for angle mode (it's a curve)
+            } else if (mode === 'cos') {
+                plotData = dCos; xLabel = 'cos(θ)';
+                if(fitCos && dCos.length > 0) {
+                    const xMin = Math.min(...dCos.map(d=>d.x)); const xMax = Math.max(...dCos.map(d=>d.x));
+                    fitData = [ {x: xMin, y: fitCos.slope*xMin + fitCos.intercept}, {x: xMax, y: fitCos.slope*xMax + fitCos.intercept} ];
+                }
+            } else {
+                plotData = dCos2; xLabel = 'cos²(θ)';
+                if(fitCos2 && dCos2.length > 0) {
+                    const xMin = Math.min(...dCos2.map(d=>d.x)); const xMax = Math.max(...dCos2.map(d=>d.x));
+                    fitData = [ {x: xMin, y: fitCos2.slope*xMin + fitCos2.intercept}, {x: xMax, y: fitCos2.slope*xMax + fitCos2.intercept} ];
+                }
+            }
+
+            let datasets = [{ label: 'Signal', data: plotData, type: 'scatter', backgroundColor: '#b056ff', pointRadius: 5 }];
+            if(fitData) {
+                datasets.push({ label: 'Linear Fit', data: fitData, type: 'line', borderColor: '#00e5ff', borderDash: [5,5], pointRadius: 0 });
+            }
+
+            charts.pol = new Chart(ctx, {
+                data: { datasets: datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: fitData !== null } },
+                    scales: {
+                        x: { type: 'linear', title: { display: true, text: xLabel }, grid: { color: colorGrid } },
+                        y: { title: { display: true, text: 'Relative Signal' }, grid: { color: colorGrid } }
+                    }
+                }
+            });
+
+            // Metadata for export
+            chartMeta['c2'] = {
+                type: 'scatter',
+                dataSets: datasets,
+                labels: [],
+                xTitle: xLabel,
+                yTitle: 'Relative Signal',
+                reportTitle: `Experiment 5: Polarization (${xLabel})`,
+                getStats: () => [
+                    { label: 'Signal vs cos(θ) R²:', value: document.getElementById('pol-r2-cos').innerText },
+                    { label: 'Signal vs cos²(θ) R²:', value: document.getElementById('pol-r2-cos2').innerText },
+                    { line: true },
+                    { explain: "Malus's Law predicts a linear relationship\nwith cos²(θ) for wave intensity."}
+                ]
+            };
+        }
+
+        // --- DATA PERSISTENCE & EXPORT ---
+        function saveLocal() {
+            const data = { refl: [], refr: [], pol: [], crit: '', disp: {r:'', b:''} };
+
+            document.querySelectorAll('#refl-body tr').forEach(r => { const i = r.querySelectorAll('input'); data.refl.push({i: i[0].value, o: i[1].value}); });
+            document.querySelectorAll('#refr-body tr').forEach(r => { const i = r.querySelectorAll('input'); data.refr.push({i: i[0].value, r: i[1].value}); });
+            document.querySelectorAll('#pol-body tr').forEach(r => { const i = r.querySelectorAll('input'); data.pol.push({a: i[0].value, s: i[1].value}); });
+
+            data.crit = document.getElementById('crit-angle').value;
+            data.disp.r = document.getElementById('disp-red').value;
+            data.disp.b = document.getElementById('disp-blue').value;
+
+            localStorage.setItem('phys43_lab5_data', JSON.stringify(data));
+        }
+
+        function loadLocal() {
+            const stored = localStorage.getItem('phys43_lab5_data');
+            if(stored) {
+                const data = JSON.parse(stored);
+
+                clearTable('refl-body'); data.refl.forEach(d => {
+                    const tbody = document.getElementById('refl-body');
+                    const tr = tbody.insertRow();
+                    tr.insertCell().appendChild(createInput(d.i, 'θ_i', updateReflection));
+                    tr.insertCell().appendChild(createInput(d.o, 'θ_r', updateReflection));
+                    const c = tr.insertCell(); c.className = 'calc-cell'; c.innerText = '--';
+                });
+
+                clearTable('refr-body'); data.refr.forEach(d => addRefractionRow(d.i, d.r));
+                clearTable('pol-body'); data.pol.forEach(d => addPolRow(d.a, d.s));
+
+                document.getElementById('crit-angle').value = data.crit || '';
+                if(data.disp) {
+                    document.getElementById('disp-red').value = data.disp.r || '';
+                    document.getElementById('disp-blue').value = data.disp.b || '';
+                }
+            } else {
+                initReflection();
+                initRefraction();
+                // Pol table empty by default
+            }
+            updateReflection(); updateRefraction(); updatePolarization(); calcCritical(); calcDispersion();
+        }
+
+        // --- HD CHART EXPORTER (From Lab 3/4 logic) ---
+        function exportHighResChart(chartKey, filename) {
+            const meta = chartMeta[chartKey];
+            if (!meta) return;
+
+            const chartCanvas = document.createElement('canvas');
+            chartCanvas.width = 1920; chartCanvas.height = 1080;
+            const chartCtx = chartCanvas.getContext('2d');
+
+            const originalColor = Chart.defaults.color;
+            Chart.defaults.color = '#000000'; Chart.defaults.font.size = 24;    
+
+            const tempChart = new Chart(chartCtx, {
+                type: meta.type,
+                data: { datasets: meta.dataSets },
+                options: {
+                    responsive: false, animation: false, devicePixelRatio: 1, 
+                    plugins: { legend: { display: meta.dataSets.length > 1, labels: {color:'#000', font:{size:24}} }, tooltip: { enabled: false } },
+                    scales: {
+                        x: { type: 'linear', title: { display: true, text: meta.xTitle, font: { weight: 'bold', size: 34 }, color: '#000' }, ticks: { color: '#000', font: { size: 24 } }, grid: { color: '#e0e0e0' } },
+                        y: { title: { display: true, text: meta.yTitle, font: { weight: 'bold', size: 34 }, color: '#000' }, ticks: { color: '#000', font: { size: 24 } }, grid: { color: '#e0e0e0' } }
+                    }
+                },
+                plugins: [{ id: 'bg', beforeDraw: (c) => { c.ctx.save(); c.ctx.fillStyle = '#ffffff'; c.ctx.fillRect(0, 0, c.width, c.height); c.ctx.restore(); } }]
+            });
+
+            const stats = meta.getStats();
+            let statsHeight = stats.reduce((acc, item) => {
+                if (item.line) return acc + 30;
+                if (item.label) return acc + 70;
+                if (item.explain) return acc + (item.explain.split('\n').length * 45) + 30;
+                return acc;
+            }, 0);
+
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = 1920; finalCanvas.height = 1250 + statsHeight + 80; 
+            const ctx = finalCanvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+            ctx.fillStyle = '#000000'; ctx.font = 'bold 52px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText(meta.reportTitle, finalCanvas.width / 2, 80);
+
+            ctx.drawImage(chartCanvas, 0, 120);
+
+            let currentY = 1250;
+            ctx.beginPath(); ctx.moveTo(150, currentY); ctx.lineTo(1770, currentY); ctx.lineWidth = 4; ctx.strokeStyle = '#00b3cc'; ctx.stroke();
+            currentY += 70;
+
+            stats.forEach(item => {
+                if (item.line) {
+                    ctx.beginPath(); ctx.moveTo(200, currentY - 25); ctx.lineTo(1720, currentY - 25); ctx.lineWidth = 2; ctx.strokeStyle = '#eeeeee'; ctx.stroke(); currentY += 25;
+                } else if (item.label) {
+                    ctx.textAlign = 'left'; ctx.fillStyle = '#000000'; ctx.font = '38px sans-serif'; ctx.fillText(item.label, 200, currentY);
+                    ctx.textAlign = 'right';
+                    if (item.isBadge) {
+                        ctx.font = 'bold 32px sans-serif'; const w = ctx.measureText(item.value).width;
+                        ctx.fillStyle = '#e6f7ff'; ctx.fillRect(1720 - w - 40, currentY - 40, w + 40, 52);
+                        ctx.fillStyle = '#00b3cc'; ctx.fillText(item.value, 1720 - 20, currentY);
+                    } else {
+                        ctx.font = 'bold 42px monospace'; ctx.fillStyle = '#00b3cc'; ctx.fillText(item.value, 1720, currentY);
+                    }
+                    currentY += 70;
+                } else if (item.explain) {
+                    ctx.textAlign = 'left'; ctx.fillStyle = '#555555'; ctx.font = 'italic 34px serif'; 
+                    item.explain.split('\n').forEach(l => { ctx.fillText(l.trim(), 200, currentY); currentY += 45; });
+                    currentY += 20;
+                }
+            });
+
+            const link = document.createElement('a');
+            link.download = filename; link.href = finalCanvas.toDataURL('image/png', 1.0); link.click();
+
+            tempChart.destroy();
+            Chart.defaults.color = originalColor;
+        }
+
+        // --- GLOBAL EVENTS ---
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            if(confirm("Clear all data and reset tables?")) { localStorage.removeItem('phys43_lab5_data'); loadLocal(); }
+        });
+
+        document.getElementById('btn-export').addEventListener('click', () => {
+            const stored = localStorage.getItem('phys43_lab5_data');
+            if(!stored) return alert("No data.");
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([stored], {type: 'application/json'}));
+            a.download = 'phys43_lab5_optics.json';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        });
+
+        document.getElementById('file-import').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const r = new FileReader();
+            r.onload = (ev) => {
+                try { localStorage.setItem('phys43_lab5_data', JSON.stringify(JSON.parse(ev.target.result))); loadLocal(); } catch(err) { alert("Invalid JSON"); }
+            };
+            r.readAsText(file);
+        });
+
+        window.addEventListener('DOMContentLoaded', loadLocal);
+    </script>
+</body>
+</html>

@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHYS 43 Lab 6: Geometric Optics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* Theme: Optics Laser (Dark/Neon) */
+            --primary: #58a6ff;      /* Laser Blue */
+            --primary-dark: #1f6feb;
+            --primary-light: #161b22;
+            --accent: #ff7b72;       /* Laser Red */
+            --accent-light: #ffa198;
+            --accent-green: #3fb950; /* Laser Green */
+            
+            --bg-body: #0d1117;
+            --bg-card: #21262d;
+            --bg-table: #161b22;
+            --text-main: #c9d1d9;
+            --text-heading: #f0f6fc;
+            --text-muted: #8b949e;
+            --border: #30363d;
+            --input-bg: #010409;
+            
+            --success: #3fb950;
+            --warning: #d29922;
+            --error: #f85149;
+            
+            --radius: 8px;
+            --shadow: 0 8px 16px rgba(0,0,0,0.4);
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 4rem;
+        }
+
+        .container {
+            max-width: 1350px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: grid;
+            gap: 2rem;
+        }
+
+        /* --- Header --- */
+        header {
+            background: var(--bg-card);
+            border-bottom: 4px solid var(--primary);
+            padding: 2rem 1rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+        
+        header h1 { color: var(--text-heading); margin-bottom: 0.5rem; letter-spacing: 1px; }
+        header .meta { color: var(--text-muted); font-size: 0.95rem; max-width: 700px; margin: 0 auto 1.5rem auto; }
+
+        /* --- Sections & Cards --- */
+        section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: var(--primary-light);
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            border-left: 5px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-header h2 { font-size: 1.3rem; color: var(--text-heading); text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
+        .card-body { padding: 1.5rem; }
+
+        /* --- Instructional Hints --- */
+        .hint-box {
+            background: rgba(88, 166, 255, 0.05);
+            border-left: 3px solid var(--primary);
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            border-radius: 0 var(--radius) var(--radius) 0;
+        }
+        .hint-box strong { color: var(--text-main); }
+
+        /* --- Formula & Info Blocks --- */
+        .formula-card {
+            background: var(--primary-light);
+            border: 1px dashed var(--border);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: space-around;
+        }
+        
+        .math-display { font-family: var(--font-mono); font-size: 1.1rem; text-align: center; color: var(--primary); }
+        .math-display.accent { color: var(--accent); }
+        .math-display.green { color: var(--accent-green); }
+        .var-def { font-size: 0.8rem; color: var(--text-muted); display: block; text-align: center; margin-top: 0.3rem; text-transform: uppercase; letter-spacing: 0.5px;}
+
+        /* --- Trace Box (Calculation Preview) --- */
+        .trace-box {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            border-radius: var(--radius);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            color: var(--text-main);
+            margin-top: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.6;
+        }
+
+        /* --- Grid Layouts --- */
+        .data-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .data-grid-uneven { display: grid; grid-template-columns: 3fr 2fr; gap: 2rem; }
+        @media (max-width: 1050px) { 
+            .data-grid, .data-grid-uneven { grid-template-columns: 1fr; } 
+        }
+
+        /* --- Tables --- */
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            background: var(--bg-table);
+        }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { background: rgba(0, 0, 0, 0.3); color: var(--text-main); text-align: center; padding: 0.75rem; font-weight: 600; white-space: nowrap; border-bottom: 2px solid var(--border); }
+        td { padding: 0.5rem; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; }
+        
+        .calc-cell { color: var(--primary); font-weight: bold; font-family: var(--font-mono); }
+        .calc-cell-accent { color: var(--accent); font-weight: bold; font-family: var(--font-mono); }
+        
+        /* --- Inputs --- */
+        input[type="number"], select {
+            width: 100%;
+            min-width: 60px;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--input-bg);
+            color: var(--text-heading);
+            font-family: var(--font-mono);
+            text-align: center;
+            transition: all 0.2s;
+        }
+        
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(88, 166, 255, 0.2);
+        }
+        
+        /* --- Buttons --- */
+        .btn-toolbar { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem;}
+        .btn-toolbar.center { justify-content: center; }
+        .btn-toolbar.right { justify-content: flex-end; }
+        
+        .btn {
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        
+        .btn-primary { background: var(--primary); color: #000; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        
+        .btn-accent { background: var(--accent); color: #000; }
+        .btn-accent:hover { background: #ff5a50; }
+        
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-outline:hover { background: var(--border); color: #fff; }
+        
+        .btn-danger { background: rgba(248, 81, 73, 0.1); color: var(--error); border: 1px solid transparent;}
+        .btn-danger:hover { background: rgba(248, 81, 73, 0.2); }
+        
+        .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.75rem; border-radius: 4px; }
+
+        /* --- Analysis & Stats --- */
+        .analysis-box {
+            background: var(--primary-light);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            padding: 1rem;
+            border-radius: var(--radius);
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        
+        .stat-card span { display: block; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
+        .stat-card strong { font-size: 1.4rem; color: var(--text-heading); font-family: var(--font-mono); margin-top: 0.25rem; display: block;}
+        .stat-card .primary-val { color: var(--primary); }
+        .stat-card .accent-val { color: var(--accent-light); }
+
+        /* --- Badges --- */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-good { background: rgba(63, 185, 80, 0.15); color: var(--success); border: 1px solid rgba(63, 185, 80, 0.3); }
+        .badge-warn { background: rgba(210, 153, 34, 0.15); color: var(--warning); border: 1px solid rgba(210, 153, 34, 0.3); }
+
+        /* --- Charts --- */
+        .chart-wrapper {
+            position: relative;
+            height: 350px;
+            width: 100%;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            margin-top: 1rem;
+            flex-grow: 1;
+        }
+
+        /* --- Utilities --- */
+        .flex-between { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-top: 1px solid var(--border); }
+        .mt-1 { margin-top: 1rem; }
+        .mb-1 { margin-bottom: 1rem; }
+        footer { text-align: center; margin-top: 3rem; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 1.5rem; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Experiment 6: Geometric Optics</h1>
+        <p class="meta">
+            Companion tool to process optical bench measurements. Graph thin lens data, determine unknown focal lengths, and calculate compound microscope magnifications.
+        </p>
+        <div class="btn-toolbar center">
+             <button id="btn-export" class="btn btn-outline">📥 Export Data (JSON)</button>
+             <label class="btn btn-outline">
+                📤 Load Data
+                <input type="file" id="file-import" accept=".json" class="sr-only">
+             </label>
+             <button id="btn-reset" class="btn btn-danger">✖ Reset All</button>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <section id="part1">
+            <div class="section-header">
+                <h2>1. Single Lens (Focal Lengths)</h2>
+                <span class="badge badge-good">1/d<sub>o</sub> + 1/d<sub>i</sub> = 1/f</span>
+            </div>
+            <div class="card-body">
+                <div class="hint-box">
+                    <strong>Bench Setup:</strong> Place the light source at the 0 mm mark. Place the lens at a known distance (d<sub>o</sub>). Move the viewing screen back and forth until the image is in sharp focus, and record the screen's distance from the lens (d<sub>i</sub>). Repeat for at least 5 different positions. The linear regression of 1/d<sub>i</sub> vs 1/d<sub>o</sub> will isolate the focal length.
+                </div>
+                
+                <div class="formula-card">
+                    <div>
+                        <div class="math-display accent">1/d<sub>i</sub> = -(1/d<sub>o</sub>) + 1/f</div>
+                        <span class="var-def">Linear Equation Form (y = mx + b)</span>
+                    </div>
+                    <div>
+                        <div class="math-display">m = -d<sub>i</sub> / d<sub>o</sub></div>
+                        <span class="var-def">Magnification</span>
+                    </div>
+                </div>
+
+                <div class="data-grid-uneven">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem;">
+                            <h3 style="color: var(--primary);">Lens A Data</h3>
+                            <button class="btn btn-primary btn-sm" onclick="addLensRow('a')">+ Add Row</button>
+                        </div>
+                        <div class="table-container">
+                            <table id="lensa-table">
+                                <thead>
+                                    <tr>
+                                        <th>d<sub>o</sub> (mm)</th>
+                                        <th>d<sub>i</sub> (mm)</th>
+                                        <th>1/d<sub>o</sub> (mm⁻¹)</th>
+                                        <th>1/d<sub>i</sub> (mm⁻¹)</th>
+                                        <th>f (mm)</th>
+                                        <th>Mag (m)</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lensa-body"></tbody>
+                            </table>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0.5rem; margin-top: 2rem;">
+                            <h3 style="color: var(--accent);">Lens B Data</h3>
+                            <button class="btn btn-accent btn-sm" onclick="addLensRow('b')">+ Add Row</button>
+                        </div>
+                        <div class="table-container">
+                            <table id="lensb-table">
+                                <thead>
+                                    <tr>
+                                        <th>d<sub>o</sub> (mm)</th>
+                                        <th>d<sub>i</sub> (mm)</th>
+                                        <th>1/d<sub>o</sub> (mm⁻¹)</th>
+                                        <th>1/d<sub>i</sub> (mm⁻¹)</th>
+                                        <th>f (mm)</th>
+                                        <th>Mag (m)</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lensb-body"></tbody>
+                            </table>
+                        </div>
+
+                        <div class="trace-box" id="lens-trace"><span style="color: var(--text-muted);">Live Calculation Trace (Enter data to see derivation)...</span></div>
+                    </div>
+
+                    <div class="analysis-box">
+                        <div class="stat-grid">
+                            <div class="stat-card" style="border-top: 3px solid var(--primary);">
+                                <span>Lens A Avg f</span>
+                                <strong id="stat-fa" class="primary-val">--</strong>
+                            </div>
+                            <div class="stat-card" style="border-top: 3px solid var(--accent);">
+                                <span>Lens B Avg f</span>
+                                <strong id="stat-fb" class="accent-val">--</strong>
+                            </div>
+                        </div>
+
+                        <div class="chart-wrapper" style="height: 300px;">
+                            <canvas id="lensChart"></canvas>
+                        </div>
+                        <div class="btn-toolbar right mt-1">
+                            <button class="btn btn-outline btn-sm" onclick="exportHighResChart('c1', 'Thin_Lens_Graph.png')">📸 Export Graph</button>
+                        </div>
+
+                        <div class="mt-1" style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border);">
+                            <h4 style="color: var(--text-heading); margin-bottom: 0.5rem; font-size: 0.9rem; text-transform: uppercase;">Regression Analytics (1/f Intercept)</h4>
+                            <div class="flex-between" style="padding-top: 0.25rem;">
+                                <span style="font-size: 0.85rem; color: var(--primary);">Lens A Graph <em>f</em>:</span>
+                                <strong id="reg-fa" class="calc-cell">--</strong>
+                            </div>
+                            <div class="flex-between" style="border-bottom: none; padding-bottom: 0;">
+                                <span style="font-size: 0.85rem; color: var(--accent);">Lens B Graph <em>f</em>:</span>
+                                <strong id="reg-fb" class="calc-cell-accent">--</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part2">
+            <div class="section-header">
+                <h2>2. Multiple Lenses: Telescope</h2>
+                <span class="badge badge-warn">L = f<sub>A</sub> + f<sub>B</sub></span>
+            </div>
+            <div class="card-body">
+                <div class="hint-box">
+                    <strong>Bench Setup:</strong> A basic refracting telescope uses two lenses separated by the exact sum of their focal lengths. Remove the screen and light source. Place the two lenses on the track separated by the calculated distance (L). Look through the eyepiece at a distant object across the room to verify it functions.
+                </div>
+                <div style="display: flex; align-items: center; gap: 2rem; background: var(--bg-table); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border);">
+                    <div>
+                        <span class="var-def" style="text-align: left;">Lens A (f<sub>A</sub>)</span>
+                        <strong id="tel-fa" style="font-size: 1.5rem; color: var(--primary); font-family: var(--font-mono);">--</strong>
+                    </div>
+                    <div style="font-size: 2rem; color: var(--text-muted);">+</div>
+                    <div>
+                        <span class="var-def" style="text-align: left;">Lens B (f<sub>B</sub>)</span>
+                        <strong id="tel-fb" style="font-size: 1.5rem; color: var(--accent); font-family: var(--font-mono);">--</strong>
+                    </div>
+                    <div style="font-size: 2rem; color: var(--text-muted);">=</div>
+                    <div style="flex-grow: 1; text-align: right;">
+                        <span class="var-def" style="text-align: right; color: var(--text-heading);">Required Track Separation (L)</span>
+                        <strong id="tel-L" style="font-size: 2.5rem; color: var(--success); font-family: var(--font-mono);">--</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part3">
+            <div class="section-header">
+                <h2>3. Multiple Lenses: Microscope</h2>
+                <span class="badge badge-good">M<sub>total</sub> = m<sub>1</sub> &times; m<sub>2</sub></span>
+            </div>
+            <div class="card-body">
+                <div class="hint-box">
+                    <strong>Bench Setup:</strong> Place the Objective Lens (B) in the middle of the track. Put the light source exactly 15 mm away (d<sub>o1</sub>). Move the screen to find the sharp image (this distance is d<sub>i1</sub>). Then, place the Eyepiece (A) behind the screen and focus it. The intermediate image on the screen acts as the object for the Eyepiece.
+                </div>
+
+                <div class="formula-card">
+                    <div>
+                        <div class="math-display accent">d<sub>i1</sub> = (d<sub>o1</sub> &middot; f<sub>B</sub>) / (d<sub>o1</sub> - f<sub>B</sub>)</div>
+                        <span class="var-def">Intermediate Image (from Objective)</span>
+                    </div>
+                    <div>
+                        <div class="math-display primary">d<sub>o2</sub> = L - d<sub>i1</sub></div>
+                        <span class="var-def">Object distance for Eyepiece</span>
+                    </div>
+                    <div>
+                        <div class="math-display green">M = (-d<sub>i1</sub>/d<sub>o1</sub>) &times; (-d<sub>i2</sub>/d<sub>o2</sub>)</div>
+                        <span class="var-def">Total Magnification</span>
+                    </div>
+                </div>
+
+                <div class="data-grid">
+                    <div style="background: var(--bg-table); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border);">
+                        <h3 style="color: var(--text-heading); margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">System Inputs</h3>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.8rem; color: var(--accent); margin-bottom: 0.2rem;">Objective f<sub>B</sub> (mm)</label>
+                                <input type="number" id="mic-fb" step="any" oninput="calcMicroscope()">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.8rem; color: var(--primary); margin-bottom: 0.2rem;">Eyepiece f<sub>A</sub> (mm)</label>
+                                <input type="number" id="mic-fa" step="any" oninput="calcMicroscope()">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.2rem;">Obj Distance d<sub>o1</sub> (mm)</label>
+                                <input type="number" id="mic-do1" value="15" step="any" oninput="calcMicroscope()">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.2rem;">Lens Separation L (mm)</label>
+                                <input type="number" id="mic-L" step="any" placeholder="Distance A to B" oninput="calcMicroscope()">
+                            </div>
+                        </div>
+
+                        <div class="trace-box" id="mic-trace" style="margin-top: 1.5rem; border-color: var(--success);"><span style="color: var(--text-muted);">Microscope Calculation Trace...</span></div>
+                    </div>
+
+                    <div class="analysis-box" style="justify-content: center;">
+                        <h3 style="color: var(--success); margin-bottom: 1.5rem; text-align: center; font-size: 1.4rem;">Microscope Outputs</h3>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <div class="stat-card" style="border-color: var(--accent);">
+                                <span>Intermediate Image (d<sub>i1</sub>)</span>
+                                <strong id="out-di1" class="accent-val">--</strong>
+                            </div>
+                            <div class="stat-card" style="border-color: var(--primary);">
+                                <span>Eyepiece Object (d<sub>o2</sub>)</span>
+                                <strong id="out-do2" class="primary-val">--</strong>
+                            </div>
+                            <div class="stat-card" style="border-color: var(--text-muted);">
+                                <span>Final Image (d<sub>i2</sub>)</span>
+                                <strong id="out-di2" style="color: var(--text-heading);">--</strong>
+                            </div>
+                            <div class="stat-card" style="border-color: var(--success); box-shadow: 0 0 15px rgba(63, 185, 80, 0.1);">
+                                <span>Total Magnification (M)</span>
+                                <strong id="out-M" style="color: var(--success);">--</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        PHYS 43 Lab Companion | Computations execute locally in your browser. | V1.1 (Lab 6)
+    </footer>
+
+    <script>
+        // --- STATE & INITIALIZATION ---
+        let lensChart = null;
+        let chartMeta = { c1: null };
+
+        const DEFAULTS = {
+            lensa: [{do: 300, di: 150}, {do: 250, di: 165}, {do: 200, di: 200}],
+            lensb: [{do: 150, di: 300}, {do: 120, di: 600}]
+        };
+
+        // --- MATH UTILS ---
+        function linearFit(x, y) {
+            const n = x.length;
+            if (n < 2) return null;
+            let sumX=0, sumY=0, sumXY=0, sumXX=0;
+            for(let i=0; i<n; i++) {
+                sumX += x[i]; sumY += y[i];
+                sumXY += x[i]*y[i]; sumXX += x[i]*x[i];
+            }
+            const slope = (n*sumXY - sumX*sumY) / (n*sumXX - sumX*sumX);
+            const intercept = (sumY - slope*sumX) / n;
+            const yMean = sumY / n;
+            let ssTot=0, ssRes=0;
+            for(let i=0; i<n; i++) {
+                ssTot += Math.pow(y[i] - yMean, 2);
+                ssRes += Math.pow(y[i] - (slope*x[i] + intercept), 2);
+            }
+            return { slope, intercept, r2: 1 - (ssRes/ssTot) };
+        }
+
+        // --- PART 1: SINGLE LENS UI & LOGIC ---
+        function createInput(val, placeholder='', oninputFn) {
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.step = 'any';
+            input.value = val;
+            input.placeholder = placeholder;
+            input.oninput = oninputFn;
+            return input;
+        }
+
+        function createDelBtn(row, updateFn) {
+            const btn = document.createElement('button');
+            btn.innerHTML = '×';
+            btn.className = 'btn btn-danger btn-sm';
+            btn.onclick = () => { row.remove(); updateFn(); };
+            return btn;
+        }
+
+        function addLensRow(lensType, d_o='', d_i='') {
+            const tbody = document.getElementById(`lens${lensType}-body`);
+            const row = tbody.insertRow();
+            row.insertCell().appendChild(createInput(d_o, 'd_o', updateAllLenses));
+            row.insertCell().appendChild(createInput(d_i, 'd_i', updateAllLenses));
+            
+            // 1/do, 1/di, f, mag
+            for(let i=0; i<4; i++) {
+                const c = row.insertCell();
+                c.className = lensType === 'a' ? 'calc-cell' : 'calc-cell-accent';
+                c.innerText = '--';
+            }
+            row.insertCell().appendChild(createDelBtn(row, updateAllLenses));
+            updateAllLenses();
+        }
+
+        function updateAllLenses() {
+            const dataA = processLensTable('a');
+            const dataB = processLensTable('b');
+            
+            drawLensChart(dataA.pts, dataB.pts, dataA.fit, dataB.fit);
+            updateTelescope(dataA.avgF, dataB.avgF);
+            
+            // Auto-fill microscope focal lengths if empty, or just suggest them
+            if(!document.getElementById('mic-fa').value && dataA.avgF) document.getElementById('mic-fa').value = dataA.avgF.toFixed(1);
+            if(!document.getElementById('mic-fb').value && dataB.avgF) document.getElementById('mic-fb').value = dataB.avgF.toFixed(1);
+            
+            calcMicroscope();
+            saveLocal();
+        }
+
+        function processLensTable(type) {
+            const rows = document.getElementById(`lens${type}-body`).rows;
+            const pts = [];
+            let sumF = 0;
+            let validCount = 0;
+            let lastValidHtml = '';
+
+            for(let i=0; i<rows.length; i++) {
+                const row = rows[i];
+                const inputs = row.querySelectorAll('input');
+                const d_o = parseFloat(inputs[0].value);
+                const d_i = parseFloat(inputs[1].value);
+                
+                const c_1do = row.cells[2];
+                const c_1di = row.cells[3];
+                const c_f = row.cells[4];
+                const c_m = row.cells[5];
+
+                if(!isNaN(d_o) && !isNaN(d_i) && d_o !== 0 && d_i !== 0) {
+                    const inv_do = 1/d_o;
+                    const inv_di = 1/d_i;
+                    const f = (d_o * d_i) / (d_o + d_i);
+                    const mag = -d_i / d_o;
+
+                    c_1do.innerText = inv_do.toFixed(4);
+                    c_1di.innerText = inv_di.toFixed(4);
+                    c_f.innerText = f.toFixed(2);
+                    c_m.innerText = mag.toFixed(2);
+
+                    pts.push({ x: inv_do, y: inv_di });
+                    sumF += f;
+                    validCount++;
+
+                    const colorClass = type === 'a' ? 'primary' : 'accent';
+                    lastValidHtml = `Lens ${type.toUpperCase()} Row ${i+1}:\n` +
+                        `1/f = 1/d<sub>o</sub> + 1/d<sub>i</sub>\n` +
+                        `1/f = (1/${d_o}) + (1/${d_i})\n` +
+                        `1/f = ${inv_do.toFixed(4)} + ${inv_di.toFixed(4)}\n` +
+                        `f = <span style="color:var(--${colorClass})">${f.toFixed(2)} mm</span>\n` +
+                        `m = -(${d_i}/${d_o}) = ${mag.toFixed(2)}`;
+                } else {
+                    c_1do.innerText = '--'; c_1di.innerText = '--'; c_f.innerText = '--'; c_m.innerText = '--';
+                }
+            }
+
+            // Update average
+            const avgF = validCount > 0 ? sumF / validCount : null;
+            document.getElementById(`stat-f${type}`).innerText = avgF ? avgF.toFixed(2) + ' mm' : '--';
+
+            // Trace box update
+            if(lastValidHtml) document.getElementById('lens-trace').innerHTML = lastValidHtml;
+
+            // Fit
+            const fit = linearFit(pts.map(p=>p.x), pts.map(p=>p.y));
+            const regF = fit && fit.intercept !== 0 ? (1/fit.intercept) : null;
+            document.getElementById(`reg-f${type}`).innerText = regF ? regF.toFixed(2) + ' mm' : '--';
+
+            return { pts, fit, avgF, regF };
+        }
+
+        // --- PART 1 GRAPHING ---
+        function drawLensChart(ptsA, ptsB, fitA, fitB) {
+            const ctx = document.getElementById('lensChart').getContext('2d');
+            const colorGrid = getComputedStyle(document.body).getPropertyValue('--border').trim();
+            const colorA = getComputedStyle(document.body).getPropertyValue('--primary').trim();
+            const colorB = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+
+            if (lensChart) lensChart.destroy();
+            Chart.defaults.color = getComputedStyle(document.body).getPropertyValue('--text-main').trim();
+
+            let datasets = [];
+            
+            if(ptsA.length > 0) datasets.push({ label: 'Lens A Data', data: ptsA, type: 'scatter', backgroundColor: colorA, pointRadius: 5 });
+            if(fitA && ptsA.length > 0) {
+                const xMax = Math.max(...ptsA.map(d=>d.x)) * 1.2;
+                datasets.push({ label: 'Lens A Fit', data: [{x:0, y:fitA.intercept}, {x:xMax, y:fitA.slope*xMax + fitA.intercept}], type: 'line', borderColor: colorA, borderDash: [5,5], pointRadius: 0 });
+            }
+
+            if(ptsB.length > 0) datasets.push({ label: 'Lens B Data', data: ptsB, type: 'scatter', backgroundColor: colorB, pointRadius: 5 });
+            if(fitB && ptsB.length > 0) {
+                const xMax = Math.max(...ptsB.map(d=>d.x)) * 1.2;
+                datasets.push({ label: 'Lens B Fit', data: [{x:0, y:fitB.intercept}, {x:xMax, y:fitB.slope*xMax + fitB.intercept}], type: 'line', borderColor: colorB, borderDash: [5,5], pointRadius: 0 });
+            }
+
+            lensChart = new Chart(ctx, {
+                data: { datasets: datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: true } },
+                    scales: {
+                        x: { type: 'linear', title: { display: true, text: '1/d_o (mm⁻¹)' }, grid: { color: colorGrid } },
+                        y: { title: { display: true, text: '1/d_i (mm⁻¹)' }, grid: { color: colorGrid } }
+                    }
+                }
+            });
+
+            chartMeta['c1'] = {
+                type: 'scatter', dataSets: datasets, labels: [],
+                xTitle: '1 / Object Distance (mm⁻¹)', yTitle: '1 / Image Distance (mm⁻¹)',
+                reportTitle: "Experiment 6: Thin Lens Equation",
+                getStats: () => [
+                    { label: 'Lens A Regression (f):', value: document.getElementById('reg-fa').innerText },
+                    { label: 'Lens B Regression (f):', value: document.getElementById('reg-fb').innerText },
+                    { line: true },
+                    { explain: "The y-intercept represents 1/f.\nThe slope theoretically equals -1."}
+                ]
+            };
+        }
+
+        // --- PART 2: TELESCOPE ---
+        function updateTelescope(fA, fB) {
+            const elFa = document.getElementById('tel-fa');
+            const elFb = document.getElementById('tel-fb');
+            const elL = document.getElementById('tel-L');
+
+            elFa.innerText = fA ? fA.toFixed(1) : '--';
+            elFb.innerText = fB ? fB.toFixed(1) : '--';
+            elL.innerText = (fA && fB) ? (fA + fB).toFixed(1) + ' mm' : '--';
+        }
+
+        // --- PART 3: MICROSCOPE ---
+        function calcMicroscope() {
+            const fb = parseFloat(document.getElementById('mic-fb').value); // Objective
+            const fa = parseFloat(document.getElementById('mic-fa').value); // Eyepiece
+            const do1 = parseFloat(document.getElementById('mic-do1').value); // Usually 15
+            const L = parseFloat(document.getElementById('mic-L').value); // Separation
+
+            const outDi1 = document.getElementById('out-di1');
+            const outDo2 = document.getElementById('out-do2');
+            const outDi2 = document.getElementById('out-di2');
+            const outM = document.getElementById('out-M');
+            const trace = document.getElementById('mic-trace');
+
+            if(isNaN(fb) || isNaN(fa) || isNaN(do1) || isNaN(L)) {
+                outDi1.innerText = '--'; outDo2.innerText = '--'; outDi2.innerText = '--'; outM.innerText = '--';
+                trace.innerHTML = '<span style="color: var(--text-muted);">Provide f<sub>B</sub>, f<sub>A</sub>, d<sub>o1</sub>, and L to calculate the system...</span>';
+                return;
+            }
+
+            let t = `<span style="color:var(--text-muted)">Step 1: Objective Lens (B)</span>\n`;
+            
+            // 1. Objective Image
+            const di1 = (do1 * fb) / (do1 - fb);
+            const m1 = -di1 / do1;
+            t += `1/d<sub>i1</sub> = 1/f<sub>B</sub> - 1/d<sub>o1</sub>\n`;
+            t += `d<sub>i1</sub> = (${do1} &times; ${fb}) / (${do1} - ${fb}) = <span style="color:var(--accent)">${di1.toFixed(2)} mm</span>\n`;
+            t += `m<sub>1</sub> = -(${di1.toFixed(2)} / ${do1}) = ${m1.toFixed(2)}\n\n`;
+
+            // 2. Eyepiece Object
+            t += `<span style="color:var(--text-muted)">Step 2: Eyepiece Lens (A)</span>\n`;
+            const do2 = L - di1;
+            t += `d<sub>o2</sub> = L - d<sub>i1</sub> = ${L} - ${di1.toFixed(2)} = <span style="color:var(--primary)">${do2.toFixed(2)} mm</span>\n`;
+
+            // 3. Eyepiece Image
+            const di2 = (do2 * fa) / (do2 - fa);
+            const m2 = -di2 / do2;
+            t += `d<sub>i2</sub> = (${do2.toFixed(2)} &times; ${fa}) / (${do2.toFixed(2)} - ${fa}) = <span style="color:var(--text-heading)">${di2.toFixed(2)} mm</span>\n`;
+            t += `m<sub>2</sub> = -(${di2.toFixed(2)} / ${do2.toFixed(2)}) = ${m2.toFixed(2)}\n\n`;
+
+            // 4. Total Mag
+            const M = m1 * m2;
+            t += `<span style="color:var(--text-muted)">Step 3: Total System Magnification</span>\n`;
+            t += `M = m<sub>1</sub> &times; m<sub>2</sub> = ${m1.toFixed(2)} &times; ${m2.toFixed(2)} = <span style="color:var(--success)">${M.toFixed(2)}</span>`;
+
+            outDi1.innerText = di1.toFixed(2) + ' mm';
+            outDo2.innerText = do2.toFixed(2) + ' mm';
+            outDi2.innerText = di2.toFixed(2) + ' mm';
+            outM.innerText = M.toFixed(2) + 'x';
+            trace.innerHTML = t;
+        }
+
+        // --- DATA PERSISTENCE & EXPORT ---
+        function saveLocal() {
+            const data = { lensa: [], lensb: [], mic: {} };
+            document.querySelectorAll('#lensa-body tr').forEach(r => { const i = r.querySelectorAll('input'); data.lensa.push({do: i[0].value, di: i[1].value}); });
+            document.querySelectorAll('#lensb-body tr').forEach(r => { const i = r.querySelectorAll('input'); data.lensb.push({do: i[0].value, di: i[1].value}); });
+            
+            data.mic = {
+                fa: document.getElementById('mic-fa').value,
+                fb: document.getElementById('mic-fb').value,
+                do1: document.getElementById('mic-do1').value,
+                L: document.getElementById('mic-L').value
+            };
+            localStorage.setItem('phys43_lab6_data', JSON.stringify(data));
+        }
+
+        function loadLocal() {
+            const stored = localStorage.getItem('phys43_lab6_data');
+            document.getElementById('lensa-body').innerHTML = '';
+            document.getElementById('lensb-body').innerHTML = '';
+
+            if(stored) {
+                const data = JSON.parse(stored);
+                data.lensa.forEach(d => addLensRow('a', d.do, d.di));
+                data.lensb.forEach(d => addLensRow('b', d.do, d.di));
+                
+                if(data.mic) {
+                    if(data.mic.fa) document.getElementById('mic-fa').value = data.mic.fa;
+                    if(data.mic.fb) document.getElementById('mic-fb').value = data.mic.fb;
+                    if(data.mic.do1) document.getElementById('mic-do1').value = data.mic.do1;
+                    if(data.mic.L) document.getElementById('mic-L').value = data.mic.L;
+                }
+            } else {
+                DEFAULTS.lensa.forEach(d => addLensRow('a', d.do, d.di));
+                DEFAULTS.lensb.forEach(d => addLensRow('b', d.do, d.di));
+            }
+            updateAllLenses();
+        }
+
+        // --- HD CHART EXPORTER ---
+        function exportHighResChart(chartKey, filename) {
+            const meta = chartMeta[chartKey];
+            if (!meta) return;
+
+            const chartCanvas = document.createElement('canvas');
+            chartCanvas.width = 1920;
+            chartCanvas.height = 1080;
+            const chartCtx = chartCanvas.getContext('2d');
+
+            const originalColor = Chart.defaults.color;
+            Chart.defaults.color = '#000000'; Chart.defaults.font.size = 24;    
+
+            const tempChart = new Chart(chartCtx, {
+                type: meta.type,
+                data: { datasets: meta.dataSets },
+                options: {
+                    responsive: false, animation: false, devicePixelRatio: 1, 
+                    plugins: { legend: { display: meta.dataSets.length > 1, labels: {color:'#000', font:{size:24}} }, tooltip: { enabled: false } },
+                    scales: {
+                        x: { type: 'linear', title: { display: true, text: meta.xTitle, font: { weight: 'bold', size: 34 }, color: '#000' }, ticks: { color: '#000', font: { size: 24 } }, grid: { color: '#e0e0e0' } },
+                        y: { title: { display: true, text: meta.yTitle, font: { weight: 'bold', size: 34 }, color: '#000' }, ticks: { color: '#000', font: { size: 24 } }, grid: { color: '#e0e0e0' } }
+                    }
+                },
+                plugins: [{ id: 'bg', beforeDraw: (c) => { c.ctx.save(); c.ctx.fillStyle = '#ffffff'; c.ctx.fillRect(0, 0, c.width, c.height); c.ctx.restore(); } }]
+            });
+
+            const stats = meta.getStats();
+            let statsHeight = stats.reduce((acc, item) => {
+                if (item.line) return acc + 30;
+                if (item.label) return acc + 70;
+                if (item.explain) return acc + (item.explain.split('\n').length * 45) + 30;
+                return acc;
+            }, 0);
+
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = 1920;
+            finalCanvas.height = 1250 + statsHeight + 80; 
+            const ctx = finalCanvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+            ctx.fillStyle = '#000000'; ctx.font = 'bold 52px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText(meta.reportTitle, finalCanvas.width / 2, 80);
+
+            ctx.drawImage(chartCanvas, 0, 120);
+
+            let currentY = 1250;
+            ctx.beginPath(); ctx.moveTo(150, currentY); ctx.lineTo(1770, currentY); ctx.lineWidth = 4; ctx.strokeStyle = '#58a6ff'; ctx.stroke();
+            currentY += 70;
+
+            stats.forEach(item => {
+                if (item.line) {
+                    ctx.beginPath(); ctx.moveTo(200, currentY - 25); ctx.lineTo(1720, currentY - 25); ctx.lineWidth = 2; ctx.strokeStyle = '#eeeeee'; ctx.stroke(); currentY += 25;
+                } else if (item.label) {
+                    ctx.textAlign = 'left'; ctx.fillStyle = '#000000'; ctx.font = '38px sans-serif'; ctx.fillText(item.label, 200, currentY);
+                    ctx.textAlign = 'right';
+                    if (item.isBadge) {
+                        ctx.font = 'bold 32px sans-serif'; const w = ctx.measureText(item.value).width;
+                        ctx.fillStyle = '#e6f7ff'; ctx.fillRect(1720 - w - 40, currentY - 40, w + 40, 52);
+                        ctx.fillStyle = '#58a6ff'; ctx.fillText(item.value, 1720 - 20, currentY);
+                    } else {
+                        ctx.font = 'bold 42px monospace'; ctx.fillStyle = '#58a6ff'; ctx.fillText(item.value, 1720, currentY);
+                    }
+                    currentY += 70;
+                } else if (item.explain) {
+                    ctx.textAlign = 'left'; ctx.fillStyle = '#555555'; ctx.font = 'italic 34px serif'; 
+                    item.explain.split('\n').forEach(l => { ctx.fillText(l.trim(), 200, currentY); currentY += 45; });
+                    currentY += 20;
+                }
+            });
+
+            const link = document.createElement('a');
+            link.download = filename; link.href = finalCanvas.toDataURL('image/png', 1.0); link.click();
+
+            tempChart.destroy();
+            Chart.defaults.color = originalColor;
+        }
+
+        // --- GLOBAL EVENTS ---
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            if(confirm("Clear all data and reset tables?")) { localStorage.removeItem('phys43_lab6_data'); loadLocal(); }
+        });
+
+        document.getElementById('btn-export').addEventListener('click', () => {
+            const stored = localStorage.getItem('phys43_lab6_data');
+            if(!stored) return alert("No data.");
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([stored], {type: 'application/json'}));
+            a.download = 'phys43_lab6_optics.json';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        });
+
+        document.getElementById('file-import').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const r = new FileReader();
+            r.onload = (ev) => {
+                try { localStorage.setItem('phys43_lab6_data', JSON.stringify(JSON.parse(ev.target.result))); loadLocal(); } catch(err) { alert("Invalid JSON"); }
+            };
+            r.readAsText(file);
+        });
+
+        window.addEventListener('DOMContentLoaded', loadLocal);
+    </script>
+</body>
+</html>

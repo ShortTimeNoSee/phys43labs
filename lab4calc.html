@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHYS 43 Lab 4: Adiabatic Process</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #61afef;
+            --primary-dark: #3b8eea;
+            --primary-light: #2c313c;
+            --accent: #c678dd;
+            
+            --bg-body: #1e2128;
+            --bg-card: #282c34;
+            --text-main: #abb2bf;
+            --text-heading: #e5c07b;
+            --text-muted: #7f848e;
+            --border: #3e4451;
+            --input-bg: #1b1d23;
+            
+            --success: #98c379;
+            --warning: #d19a66;
+            --error: #e06c75;
+            
+            --radius: 8px;
+            --shadow: 0 4px 12px rgba(0,0,0,0.2);
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: "Fira Code", Consolas, Monaco, "Courier New", monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 4rem;
+        }
+
+        .container {
+            max-width: 1250px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: grid;
+            gap: 2rem;
+        }
+
+        header {
+            background: var(--bg-card);
+            border-bottom: 4px solid var(--primary);
+            padding: 2rem 1rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+        
+        header h1 { color: var(--primary); margin-bottom: 0.5rem; }
+        header .meta { color: var(--text-muted); font-size: 0.95rem; max-width: 600px; margin: 0 auto 1rem auto; }
+
+        section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: var(--primary-light);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            border-left: 5px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-header h2 { font-size: 1.3rem; color: var(--text-heading); }
+        .card-body { padding: 1.5rem; }
+
+        .formula-card {
+            background: var(--primary-light);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .math-display {
+            font-family: var(--font-mono);
+            font-size: 1.1rem;
+            text-align: center;
+            color: var(--primary);
+        }
+        
+        .var-def { 
+            font-size: 0.85rem; 
+            color: var(--text-muted); 
+            display: block; 
+            text-align: center; 
+            margin-top: 0.3rem;
+        }
+
+        .trace-box {
+            background: var(--input-bg);
+            border: 1px dashed var(--border);
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            border-radius: var(--radius);
+            font-family: var(--font-mono);
+            font-size: 0.95rem;
+            color: var(--text-main);
+            margin-top: 1rem;
+            white-space: pre-wrap;
+            line-height: 1.8;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 2rem;
+        }
+        
+        @media (max-width: 1050px) { .data-grid { grid-template-columns: 1fr; } }
+
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+        }
+        
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        
+        th {
+            background: var(--primary-light);
+            color: var(--text-main);
+            text-align: center;
+            padding: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        td { padding: 0.5rem; border-bottom: 1px solid var(--border); text-align: center; }
+        .calc-cell { color: var(--primary); font-weight: bold; font-family: var(--font-mono); }
+        
+        input[type="number"], select {
+            width: 100%;
+            min-width: 70px;
+            padding: 0.4rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+        
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(97, 175, 239, 0.2);
+        }
+
+        .analysis-box {
+            background: var(--primary-light);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            padding: 1rem;
+            border-radius: var(--radius);
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        
+        .stat-card span { display: block; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
+        .stat-card strong { font-size: 1.5rem; color: var(--primary); font-family: var(--font-mono);}
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .badge-good { background: rgba(152, 195, 121, 0.15); color: var(--success); }
+        .badge-warn { background: rgba(209, 154, 102, 0.15); color: var(--warning); }
+        .badge-bad { background: rgba(224, 108, 117, 0.15); color: var(--error); }
+
+        .btn-toolbar { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;}
+        
+        .btn {
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-body);
+        }
+        
+        .btn-primary { background: var(--primary); }
+        .btn-primary:hover { background: var(--primary-dark); }
+        
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-outline:hover { background: var(--border); color: #fff; }
+        
+        .btn-danger { background: rgba(224, 108, 117, 0.15); color: var(--error); border: 1px solid transparent;}
+        .btn-danger:hover { background: rgba(224, 108, 117, 0.25); }
+        
+        .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
+
+        .chart-wrapper {
+            position: relative;
+            height: 350px;
+            width: 100%;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .exercise-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            background: var(--primary-light);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+        
+        .input-group { display: flex; flex-direction: column; gap: 0.3rem; }
+        .input-group label { font-size: 0.85rem; font-weight: bold; color: var(--text-muted); }
+
+        footer { text-align: center; margin-top: 2rem; font-size: 0.85rem; color: var(--text-muted); }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Experiment 4: Adiabatic Process</h1>
+        <p class="meta">
+            An adiabatic process has no exchange of thermal energy between the system and its surrounds. 
+            Since Q = 0, the work done by the gas equals the negative change in internal energy.
+        </p>
+        <div class="btn-toolbar">
+             <button id="btn-export" class="btn btn-outline">📥 Export Data</button>
+             <label class="btn btn-outline">
+                📤 Load Data
+                <input type="file" id="file-import" accept=".json" class="sr-only">
+             </label>
+             <button id="btn-reset" class="btn btn-danger">✖ Reset All</button>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <section id="data-collection">
+            <div class="section-header">
+                <h2>1. State Variables & γ Calculation</h2>
+                <span class="badge badge-good">10 Trials Required</span>
+            </div>
+            <div class="card-body">
+                <div class="formula-card">
+                    <div>
+                        <div class="math-display">PV<sup>γ</sup> = const</div>
+                        <span class="var-def">Pressure-Volume Relation</span>
+                    </div>
+                    <div>
+                        <div class="math-display">γ = ln(P<sub>f</sub> / P<sub>i</sub>) / ln(V<sub>i</sub> / V<sub>f</sub>)</div>
+                        <span class="var-def">Specific Heats Ratio Derivation</span>
+                    </div>
+                    <div>
+                        <div class="math-display">W = (P<sub>2</sub>V<sub>2</sub> - P<sub>1</sub>V<sub>1</sub>) / (1 - γ)</div>
+                        <span class="var-def">Adiabatic Work</span>
+                    </div>
+                </div>
+
+                <div class="data-grid">
+                    <div>
+                        <div class="btn-toolbar" style="justify-content: flex-start; margin-bottom: 1rem;">
+                            <button class="btn btn-primary btn-sm" onclick="addRow()">+ Add Trial</button>
+                            <button class="btn btn-outline btn-sm" onclick="generateSampleData()">Load Sample Data</button>
+                        </div>
+                        <div class="table-container">
+                            <table id="main-table">
+                                <thead>
+                                    <tr>
+                                        <th>Trial</th>
+                                        <th>P<sub>i</sub> (Pa)</th>
+                                        <th>V<sub>i</sub> (m<sup>3</sup>)</th>
+                                        <th>T<sub>i</sub> (K)</th>
+                                        <th>P<sub>f</sub> (Pa)</th>
+                                        <th>V<sub>f</sub> (m<sup>3</sup>)</th>
+                                        <th>T<sub>f</sub> (K)</th>
+                                        <th>γ (calc)</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-body">
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="trace-box" id="table-trace"><span style="color: var(--text-muted);">Live Calculation Trace (Type data to see derivation)...</span></div>
+                    </div>
+
+                    <div>
+                        <div class="analysis-box">
+                            <h3 style="margin-bottom: 1rem; color: var(--text-heading); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Statistical Analysis</h3>
+                            
+                            <div class="stat-grid">
+                                <div class="stat-card">
+                                    <span>Average γ (μ)</span>
+                                    <strong id="stat-mean">--</strong>
+                                </div>
+                                <div class="stat-card">
+                                    <span>Std Dev (σ)</span>
+                                    <strong id="stat-std">--</strong>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-top: 1px solid var(--border);">
+                                <span>Accepted Diatomic Value:</span>
+                                <strong style="font-family: var(--font-mono);">1.400</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-top: 1px solid var(--border);">
+                                <span>% Error from Accepted:</span>
+                                <span id="stat-error" class="badge">--</span>
+                            </div>
+                            
+                            <div class="chart-wrapper" style="margin-top: 1.5rem;">
+                                <canvas id="pvChart"></canvas>
+                            </div>
+                            <div class="btn-toolbar" style="justify-content: flex-end; margin-top: 0.5rem;">
+                                <button class="btn btn-outline btn-sm" onclick="exportHighResChart('c1', 'Adiabatic_PV_Diagram_Report.png')">📸 Export Lab Report Graph</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="exercises">
+            <div class="section-header">
+                <h2>2. Adiabatic State Predictor (Exercises)</h2>
+                <span class="badge badge-warn">Lab Report Helper</span>
+            </div>
+            <div class="card-body">
+                <p style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.95rem;">
+                    Calculate final states and work done. Enter the initial state and <strong>ONE</strong> final target variable to auto-solve the rest.
+                </p>
+
+                <div class="exercise-grid">
+                    <div class="input-group">
+                        <label>Gas Type (γ)</label>
+                        <select id="ex_gamma" onchange="calcExercise()">
+                            <option value="1.4">Diatomic (γ = 1.40)</option>
+                            <option value="1.6666667">Monatomic (γ = 1.67)</option>
+                            <option value="custom">Custom (Use average from Part 1)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem;">
+                    
+                    <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border);">
+                        <h4 style="margin-bottom: 0.5rem; color: var(--primary);">Initial State (1)</h4>
+                        <div class="input-group" style="margin-bottom: 0.5rem;">
+                            <label>P<sub>1</sub> (atm)</label>
+                            <input type="number" id="ex_p1" step="any" oninput="calcExercise()">
+                        </div>
+                        <div class="input-group" style="margin-bottom: 0.5rem;">
+                            <label>V<sub>1</sub> (L)</label>
+                            <input type="number" id="ex_v1" step="any" oninput="calcExercise()">
+                        </div>
+                        <div class="input-group">
+                            <label>T<sub>1</sub> (K)</label>
+                            <input type="number" id="ex_t1" step="any" oninput="calcExercise()">
+                        </div>
+                    </div>
+
+                    <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border);">
+                        <h4 style="margin-bottom: 0.5rem; color: var(--primary);">Final State (2) Targets</h4>
+                        <div class="input-group" style="margin-bottom: 0.5rem;">
+                            <label>Target V<sub>2</sub> (L)</label>
+                            <input type="number" id="ex_v2_target" step="any" oninput="clearTargets('v2'); calcExercise()">
+                        </div>
+                        <div class="input-group" style="margin-bottom: 0.5rem;">
+                            <label>Target P<sub>2</sub> (atm)</label>
+                            <input type="number" id="ex_p2_target" step="any" oninput="clearTargets('p2'); calcExercise()">
+                        </div>
+                        <div class="input-group">
+                            <label>Target T<sub>2</sub> (K)</label>
+                            <input type="number" id="ex_t2_target" step="any" oninput="clearTargets('t2'); calcExercise()">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem; padding: 1.5rem; background: var(--bg-card); border-radius: var(--radius); border: 1px solid var(--border);">
+                    <h4 style="margin-bottom: 1rem; color: var(--success);">Final Answers</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                        <div>
+                            <span class="var-def" style="text-align: left;">Final P<sub>2</sub> (atm)</span>
+                            <strong id="res_p2" style="font-size: 1.2rem; font-family: var(--font-mono); color: var(--text-main);">--</strong>
+                        </div>
+                        <div>
+                            <span class="var-def" style="text-align: left;">Final V<sub>2</sub> (L)</span>
+                            <strong id="res_v2" style="font-size: 1.2rem; font-family: var(--font-mono); color: var(--text-main);">--</strong>
+                        </div>
+                        <div>
+                            <span class="var-def" style="text-align: left;">Final T<sub>2</sub> (K)</span>
+                            <strong id="res_t2" style="font-size: 1.2rem; font-family: var(--font-mono); color: var(--text-main);">--</strong>
+                        </div>
+                        <div>
+                            <span class="var-def" style="text-align: left;">Work (L&middot;atm)</span>
+                            <strong id="res_w" style="font-size: 1.2rem; font-family: var(--font-mono); color: var(--primary);">--</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trace-box" id="ex-trace"><span style="color: var(--text-muted);">Live Calculation Trace (Type data to see derivation)...</span></div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        PHYS 43 Lab Companion | Computations execute locally in your browser.
+    </footer>
+
+    <script>
+        // --- GLOBAL STATE ---
+        let pvChart = null;
+        let chartMeta = { c1: null };
+
+        // --- MATH / STATS UTILS ---
+        function calculateStats(arr) {
+            if(arr.length === 0) return { mean: null, std: null };
+            const n = arr.length;
+            const mean = arr.reduce((a, b) => a + b, 0) / n;
+            if(n === 1) return { mean, std: 0 };
+            const variance = arr.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / (n - 1);
+            return { mean, std: Math.sqrt(variance) };
+        }
+
+        // --- PART 1: MAIN TABLE ---
+        function createRowHTML(index, data = {}) {
+            return `
+                <tr id="row-${index}">
+                    <td style="font-weight: bold; color: var(--text-muted);">${index + 1}</td>
+                    <td><input type="number" class="p-i" value="${data.pi || ''}" step="any" oninput="updateTable(${index})"></td>
+                    <td><input type="number" class="v-i" value="${data.vi || ''}" step="any" oninput="updateTable(${index})"></td>
+                    <td><input type="number" class="t-i" value="${data.ti || ''}" step="any" oninput="updateTable(${index})"></td>
+                    <td><input type="number" class="p-f" value="${data.pf || ''}" step="any" oninput="updateTable(${index})"></td>
+                    <td><input type="number" class="v-f" value="${data.vf || ''}" step="any" oninput="updateTable(${index})"></td>
+                    <td><input type="number" class="t-f" value="${data.tf || ''}" step="any" oninput="updateTable(${index})"></td>
+                    <td class="calc-cell row-gamma">--</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="removeRow(${index})" style="padding: 0.1rem 0.4rem;">×</button>
+                    </td>
+                </tr>
+            `;
+        }
+
+        function addRow(data = {}) {
+            const tbody = document.getElementById('table-body');
+            const rowCount = tbody.children.length;
+            tbody.insertAdjacentHTML('beforeend', createRowHTML(rowCount, data));
+            updateTable();
+        }
+
+        function removeRow(index) {
+            const row = document.getElementById(`row-${index}`);
+            if(row) row.remove();
+            
+            const rows = document.getElementById('table-body').children;
+            for(let i=0; i<rows.length; i++) {
+                rows[i].id = `row-${i}`;
+                rows[i].cells[0].innerText = i + 1;
+                rows[i].cells[8].innerHTML = `<button class="btn btn-danger btn-sm" onclick="removeRow(${i})" style="padding: 0.1rem 0.4rem;">×</button>`;
+            }
+            updateTable();
+        }
+
+        function updateTable(activeIndex = -1) {
+            const rows = document.getElementById('table-body').children;
+            const gammas = [];
+            const chartData = [];
+
+            for(let i=0; i<rows.length; i++) {
+                const row = rows[i];
+                const pi = parseFloat(row.querySelector('.p-i').value);
+                const vi = parseFloat(row.querySelector('.v-i').value);
+                const pf = parseFloat(row.querySelector('.p-f').value);
+                const vf = parseFloat(row.querySelector('.v-f').value);
+                
+                const gammaCell = row.querySelector('.row-gamma');
+
+                if (!isNaN(pi) && !isNaN(vi) && !isNaN(pf) && !isNaN(vf) && pi > 0 && pf > 0 && vi > 0 && vf > 0) {
+                    const gamma = Math.log(pf / pi) / Math.log(vi / vf);
+                    gammaCell.innerText = gamma.toFixed(4);
+                    
+                    if(isFinite(gamma)) {
+                        gammas.push(gamma);
+                        chartData.push({ pi, vi, pf, vf, gamma });
+                    }
+
+                    if (activeIndex === i) {
+                        document.getElementById('table-trace').innerHTML = 
+                            `<span style="color:var(--text-muted)">Row ${i+1} Trace:</span>\n` +
+                            `γ = ln(P<sub>f</sub> / P<sub>i</sub>) / ln(V<sub>i</sub> / V<sub>f</sub>)\n` +
+                            `γ = ln(${pf} / ${pi}) / ln(${vi} / ${vf})\n` +
+                            `γ = ${Math.log(pf/pi).toFixed(4)} / ${Math.log(vi/vf).toFixed(4)} = <span style="color:var(--success)">${gamma.toFixed(4)}</span>`;
+                    }
+                } else {
+                    gammaCell.innerText = '--';
+                    if (activeIndex === i) {
+                        document.getElementById('table-trace').innerHTML = `<span style="color: var(--text-muted);">Awaiting complete P and V data for Row ${i+1}...</span>`;
+                    }
+                }
+            }
+
+            const meanEl = document.getElementById('stat-mean');
+            const stdEl = document.getElementById('stat-std');
+            const errEl = document.getElementById('stat-error');
+
+            if(gammas.length > 0) {
+                const stats = calculateStats(gammas);
+                meanEl.innerText = stats.mean.toFixed(4);
+                stdEl.innerText = stats.std.toFixed(4);
+                
+                const err = Math.abs((stats.mean - 1.4) / 1.4) * 100;
+                errEl.innerText = err.toFixed(2) + "%";
+                
+                if(err <= 5) errEl.className = "badge badge-good";
+                else if(err <= 15) errEl.className = "badge badge-warn";
+                else errEl.className = "badge badge-bad";
+            } else {
+                meanEl.innerText = '--';
+                stdEl.innerText = '--';
+                errEl.innerText = '--';
+                errEl.className = "badge";
+            }
+
+            drawChart(chartData);
+            saveDataLocal();
+        }
+
+        // --- GRAPHING ---
+        function drawChart(dataList) {
+            const ctx = document.getElementById('pvChart').getContext('2d');
+            const colorGrid = getComputedStyle(document.body).getPropertyValue('--border').trim();
+            const colorPrim = getComputedStyle(document.body).getPropertyValue('--primary').trim();
+            const colorWarn = getComputedStyle(document.body).getPropertyValue('--warning').trim();
+            const colorText = getComputedStyle(document.body).getPropertyValue('--text-main').trim();
+
+            if (pvChart) pvChart.destroy();
+            Chart.defaults.color = colorText;
+
+            const datasets = [];
+
+            dataList.forEach((d, i) => {
+                const curvePts = [];
+                const steps = 20;
+                const vMin = Math.min(d.vi, d.vf);
+                const vMax = Math.max(d.vi, d.vf);
+                const stepSize = (vMax - vMin) / steps;
+                
+                for(let v = vMin; v <= vMax; v += stepSize) {
+                    const p = d.pi * Math.pow((d.vi / v), d.gamma);
+                    curvePts.push({ x: v, y: p });
+                }
+
+                datasets.push({
+                    label: `Trial ${i+1} Path`,
+                    data: curvePts,
+                    type: 'line',
+                    borderColor: i === 0 ? colorPrim : 'rgba(97, 175, 239, 0.3)',
+                    borderWidth: i === 0 ? 3 : 1,
+                    pointRadius: 0,
+                    tension: 0.1
+                });
+                
+                datasets.push({
+                    label: `Trial ${i+1} States`,
+                    data: [{x: d.vi, y: d.pi}, {x: d.vf, y: d.pf}],
+                    type: 'scatter',
+                    backgroundColor: colorWarn,
+                    pointRadius: 4
+                });
+            });
+
+            pvChart = new Chart(ctx, {
+                data: { datasets: datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) => `V: ${ctx.parsed.x.toExponential(2)}, P: ${ctx.parsed.y.toFixed(0)}`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            title: { display: true, text: 'Volume (m³)', color: colorText, font: { weight: 'bold' } },
+                            grid: { color: colorGrid },
+                            ticks: { color: '#7f848e' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Pressure (Pa)', color: colorText, font: { weight: 'bold' } },
+                            grid: { color: colorGrid },
+                            ticks: { color: '#7f848e' }
+                        }
+                    }
+                }
+            });
+
+            // Update Metadata for HD Export
+            chartMeta['c1'] = {
+                type: 'scatter',
+                dataSets: datasets,
+                labels: [],
+                xTitle: 'Volume (m³)',
+                yTitle: 'Pressure (Pa)',
+                reportTitle: "Experiment 4: Adiabatic Process (PV Diagram)",
+                getStats: () => [
+                    { label: 'Average γ (μ):', value: document.getElementById('stat-mean').innerText },
+                    { label: 'Std Dev (σ):', value: document.getElementById('stat-std').innerText },
+                    { line: true },
+                    { label: 'Accepted Diatomic Value:', value: '1.400' },
+                    { label: '% Error from Accepted:', value: document.getElementById('stat-error').innerText, isBadge: true }
+                ]
+            };
+        }
+
+        /* --- HD REPORT GENERATOR --- */
+        function exportHighResChart(chartKey, filename) {
+            const meta = chartMeta[chartKey];
+            if (!meta) return;
+
+            // Step 1: Create Offscreen Canvas
+            const chartCanvas = document.createElement('canvas');
+            chartCanvas.width = 1920;
+            chartCanvas.height = 1080;
+            const chartCtx = chartCanvas.getContext('2d');
+
+            const originalColor = Chart.defaults.color;
+            const originalFont = Chart.defaults.font.size;
+            Chart.defaults.color = '#000000'; 
+            Chart.defaults.font.size = 24;    
+
+            const tempChart = new Chart(chartCtx, {
+                type: meta.type,
+                data: { labels: meta.labels, datasets: meta.dataSets },
+                options: {
+                    responsive: false, animation: false, devicePixelRatio: 1, 
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false } 
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear', position: 'bottom',
+                            title: { display: true, text: meta.xTitle, font: { weight: 'bold', size: 34 }, color: '#000000' },
+                            ticks: { color: '#000000', font: { size: 24 } },
+                            grid: { color: '#e0e0e0' } 
+                        },
+                        y: {
+                            title: { display: true, text: meta.yTitle, font: { weight: 'bold', size: 34 }, color: '#000000' },
+                            ticks: { color: '#000000', font: { size: 24 } },
+                            grid: { color: '#e0e0e0' }
+                        }
+                    }
+                },
+                plugins: [{
+                    id: 'customWhiteBackground',
+                    beforeDraw: (chart) => {
+                        const c = chart.ctx;
+                        c.save(); c.fillStyle = '#ffffff'; c.fillRect(0, 0, chart.width, chart.height); c.restore();
+                    }
+                }]
+            });
+
+            // Step 2: Grab Stats Content
+            const stats = meta.getStats();
+            let statsHeight = stats.reduce((acc, item) => {
+                if (item.line) return acc + 30;
+                if (item.label) return acc + 70;
+                if (item.explain) return acc + (item.explain.split('\n').length * 45) + 30;
+                return acc;
+            }, 0);
+
+            // Step 3: Create Master Composite Canvas
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = 1920;
+            finalCanvas.height = 1250 + statsHeight + 80; 
+            const ctx = finalCanvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+            // Report Title
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 52px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(meta.reportTitle, finalCanvas.width / 2, 80);
+
+            // Draw Chart 
+            ctx.drawImage(chartCanvas, 0, 120);
+
+            // Draw Divider
+            let currentY = 1250;
+            ctx.beginPath();
+            ctx.moveTo(150, currentY);
+            ctx.lineTo(1770, currentY);
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#3b8eea'; // Blue accent
+            ctx.stroke();
+            currentY += 70;
+
+            // Step 4: Draw Info Section
+            stats.forEach(item => {
+                if (item.line) {
+                    ctx.beginPath();
+                    ctx.moveTo(200, currentY - 25);
+                    ctx.lineTo(1720, currentY - 25);
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = '#eeeeee';
+                    ctx.stroke();
+                    currentY += 25;
+                } else if (item.label) {
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#000000'; 
+                    ctx.font = '38px sans-serif';
+                    ctx.fillText(item.label, 200, currentY);
+
+                    ctx.textAlign = 'right';
+                    if (item.isBadge) {
+                        ctx.font = 'bold 32px sans-serif';
+                        const textWidth = ctx.measureText(item.value).width;
+                        const padX = 20, padY = 40;
+                        ctx.fillStyle = '#e5f6fd'; // Light blue pill
+                        ctx.fillRect(1720 - textWidth - padX*2, currentY - padY, textWidth + padX*2, 52);
+                        ctx.fillStyle = '#3b8eea'; // Blue text
+                        ctx.fillText(item.value, 1720 - padX, currentY);
+                    } else {
+                        ctx.font = 'bold 42px monospace';
+                        ctx.fillStyle = '#3b8eea';
+                        ctx.fillText(item.value, 1720, currentY);
+                    }
+                    currentY += 70;
+                } else if (item.explain) {
+                    ctx.textAlign = 'left';
+                    ctx.fillStyle = '#555555';
+                    ctx.font = 'italic 34px serif'; 
+                    const lines = item.explain.split('\n');
+                    lines.forEach(l => {
+                        ctx.fillText(l.trim(), 200, currentY);
+                        currentY += 45;
+                    });
+                    currentY += 20;
+                }
+            });
+
+            // Trigger Download
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = finalCanvas.toDataURL('image/png', 1.0);
+            link.click();
+
+            // Cleanup
+            tempChart.destroy();
+            Chart.defaults.color = originalColor;
+            Chart.defaults.font.size = originalFont;
+        }
+
+        // --- PART 2: EXERCISES ---
+        function clearTargets(exceptId) {
+            if(exceptId !== 'v2') document.getElementById('ex_v2_target').value = '';
+            if(exceptId !== 'p2') document.getElementById('ex_p2_target').value = '';
+            if(exceptId !== 't2') document.getElementById('ex_t2_target').value = '';
+        }
+
+        function calcExercise() {
+            const p1 = parseFloat(document.getElementById('ex_p1').value);
+            const v1 = parseFloat(document.getElementById('ex_v1').value);
+            const t1 = parseFloat(document.getElementById('ex_t1').value);
+            
+            const v2_t = parseFloat(document.getElementById('ex_v2_target').value);
+            const p2_t = parseFloat(document.getElementById('ex_p2_target').value);
+            const t2_t = parseFloat(document.getElementById('ex_t2_target').value);
+            
+            let gammaSel = document.getElementById('ex_gamma').value;
+            let gamma = 1.4;
+            
+            if(gammaSel === 'custom') {
+                const mean = parseFloat(document.getElementById('stat-mean').innerText);
+                if(!isNaN(mean)) gamma = mean;
+            } else {
+                gamma = parseFloat(gammaSel);
+            }
+
+            let p2 = null, v2 = null, t2 = null;
+            let traceStr = `<span style="color:var(--text-muted)">Exercise Trace (γ = ${gamma.toFixed(4)}):</span>\n`;
+
+            if(isNaN(p1) || isNaN(v1) || isNaN(t1)) {
+                resetExOutputs();
+                document.getElementById('ex-trace').innerHTML = `<span style="color: var(--text-muted);">Please fill out all Initial State variables (P<sub>1</sub>, V<sub>1</sub>, T<sub>1</sub>) first.</span>`;
+                return;
+            }
+            
+            if(!isNaN(v2_t)) {
+                v2 = v2_t;
+                p2 = p1 * Math.pow((v1 / v2), gamma);
+                t2 = t1 * Math.pow((v1 / v2), gamma - 1);
+                
+                traceStr += `Given Target V<sub>2</sub> = ${v2}\n`;
+                traceStr += `P<sub>2</sub> = P<sub>1</sub> &middot; (V<sub>1</sub> / V<sub>2</sub>)<sup>γ</sup>\n`;
+                traceStr += `   = ${p1} &middot; (${v1} / ${v2})<sup>${gamma.toFixed(3)}</sup> = <span style="color:var(--primary)">${p2.toFixed(4)}</span>\n`;
+                traceStr += `T<sub>2</sub> = T<sub>1</sub> &middot; (V<sub>1</sub> / V<sub>2</sub>)<sup>(γ - 1)</sup>\n`;
+                traceStr += `   = ${t1} &middot; (${v1} / ${v2})<sup>${(gamma-1).toFixed(3)}</sup> = <span style="color:var(--primary)">${t2.toFixed(4)}</span>\n`;
+            } 
+            else if(!isNaN(p2_t)) {
+                p2 = p2_t;
+                v2 = v1 * Math.pow((p1 / p2), 1/gamma);
+                t2 = t1 * Math.pow((p2 / p1), (gamma - 1)/gamma);
+                
+                traceStr += `Given Target P<sub>2</sub> = ${p2}\n`;
+                traceStr += `V<sub>2</sub> = V<sub>1</sub> &middot; (P<sub>1</sub> / P<sub>2</sub>)<sup>(1/γ)</sup>\n`;
+                traceStr += `   = ${v1} &middot; (${p1} / ${p2})<sup>(1/${gamma.toFixed(3)})</sup> = <span style="color:var(--primary)">${v2.toFixed(4)}</span>\n`;
+                traceStr += `T<sub>2</sub> = T<sub>1</sub> &middot; (P<sub>2</sub> / P<sub>1</sub>)<sup>((γ - 1)/γ)</sup>\n`;
+                traceStr += `   = ${t1} &middot; (${p2} / ${p1})<sup>((${gamma.toFixed(3)}-1)/${gamma.toFixed(3)})</sup> = <span style="color:var(--primary)">${t2.toFixed(4)}</span>\n`;
+            }
+            else if(!isNaN(t2_t)) {
+                t2 = t2_t;
+                v2 = v1 * Math.pow((t1 / t2), 1/(gamma - 1));
+                p2 = p1 * Math.pow((t2 / t1), gamma/(gamma - 1));
+
+                traceStr += `Given Target T<sub>2</sub> = ${t2}\n`;
+                traceStr += `V<sub>2</sub> = V<sub>1</sub> &middot; (T<sub>1</sub> / T<sub>2</sub>)<sup>(1/(γ - 1))</sup>\n`;
+                traceStr += `   = ${v1} &middot; (${t1} / ${t2})<sup>(1/${(gamma-1).toFixed(3)})</sup> = <span style="color:var(--primary)">${v2.toFixed(4)}</span>\n`;
+                traceStr += `P<sub>2</sub> = P<sub>1</sub> &middot; (T<sub>2</sub> / T<sub>1</sub>)<sup>(γ/(γ - 1))</sup>\n`;
+                traceStr += `   = ${p1} &middot; (${t2} / ${t1})<sup>(${gamma.toFixed(3)}/${(gamma-1).toFixed(3)})</sup> = <span style="color:var(--primary)">${p2.toFixed(4)}</span>\n`;
+            } else {
+                resetExOutputs();
+                document.getElementById('ex-trace').innerHTML = `<span style="color: var(--text-muted);">Awaiting a final target variable (V<sub>2</sub>, P<sub>2</sub>, or T<sub>2</sub>)...</span>`;
+                return;
+            }
+
+            const w = ((p2 * v2) - (p1 * v1)) / (1 - gamma);
+            
+            traceStr += `\nWork = (P<sub>2</sub>V<sub>2</sub> - P<sub>1</sub>V<sub>1</sub>) / (1 - γ)\n`;
+            traceStr += `     = (${p2.toFixed(4)} &middot; ${v2.toFixed(4)} - ${p1} &middot; ${v1}) / (1 - ${gamma.toFixed(3)})\n`;
+            traceStr += `     = <span style="color:var(--success)">${w.toFixed(4)} L&middot;atm</span>`;
+
+            document.getElementById('res_p2').innerText = p2.toPrecision(4);
+            document.getElementById('res_v2').innerText = v2.toPrecision(4);
+            document.getElementById('res_t2').innerText = t2.toPrecision(4);
+            document.getElementById('res_w').innerText = w.toPrecision(4);
+            
+            document.getElementById('ex-trace').innerHTML = traceStr;
+        }
+
+        function resetExOutputs() {
+            document.getElementById('res_p2').innerText = '--';
+            document.getElementById('res_v2').innerText = '--';
+            document.getElementById('res_t2').innerText = '--';
+            document.getElementById('res_w').innerText = '--';
+        }
+
+        // --- DATA STATE ---
+        function saveDataLocal() {
+            const rows = document.getElementById('table-body').children;
+            const data = [];
+            for(let row of rows) {
+                data.push({
+                    pi: row.querySelector('.p-i').value,
+                    vi: row.querySelector('.v-i').value,
+                    ti: row.querySelector('.t-i').value,
+                    pf: row.querySelector('.p-f').value,
+                    vf: row.querySelector('.v-f').value,
+                    tf: row.querySelector('.t-f').value
+                });
+            }
+            localStorage.setItem('phys43_lab4_data', JSON.stringify(data));
+        }
+
+        function loadDataLocal() {
+            const stored = localStorage.getItem('phys43_lab4_data');
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            
+            if(stored) {
+                const data = JSON.parse(stored);
+                data.forEach((d) => addRow(d));
+            } else {
+                for(let i=0; i<10; i++) addRow();
+            }
+        }
+
+        function generateSampleData() {
+            if(!confirm("Overwrite current data with sample data?")) return;
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+            
+            const samples = [
+                {pi: 101300, vi: 0.0010, ti: 295, pf: 135000, vf: 0.00080, tf: 315},
+                {pi: 101300, vi: 0.0010, ti: 295, pf: 140000, vf: 0.00078, tf: 318},
+                {pi: 101250, vi: 0.0010, ti: 296, pf: 138500, vf: 0.00079, tf: 316},
+                {pi: 101350, vi: 0.0010, ti: 294, pf: 155000, vf: 0.00072, tf: 325}
+            ];
+            
+            samples.forEach(s => addRow(s));
+            for(let i=4; i<10; i++) addRow();
+        }
+
+        // --- EVENT LISTENERS ---
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            if(confirm("Clear all data and reset tables?")) {
+                localStorage.removeItem('phys43_lab4_data');
+                loadDataLocal();
+                document.getElementById('table-trace').innerHTML = '<span style="color: var(--text-muted);">Live Calculation Trace (Type data to see derivation)...</span>';
+                document.getElementById('ex-trace').innerHTML = '<span style="color: var(--text-muted);">Live Calculation Trace (Type data to see derivation)...</span>';
+            }
+        });
+
+        document.getElementById('btn-export').addEventListener('click', () => {
+            const stored = localStorage.getItem('phys43_lab4_data');
+            if(!stored) return alert("No data to export.");
+            const blob = new Blob([stored], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'phys43_lab4_adiabatic.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+
+        document.getElementById('file-import').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const d = JSON.parse(ev.target.result);
+                    localStorage.setItem('phys43_lab4_data', JSON.stringify(d));
+                    loadDataLocal();
+                } catch(err) { alert("Invalid JSON"); }
+            };
+            reader.readAsText(file);
+        });
+
+        window.addEventListener('DOMContentLoaded', loadDataLocal);
+
+    </script>
+</body>
+</html>
