@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHYS 43 Lab 7: Interference and Diffraction</title>
+    <style>
+        /* Global Reset for PDF Border Clipping */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Theme: Optics Laser (Dark/Neon) */
+            --primary: #00e5ff;      
+            --primary-dark: #00b3cc;
+            --primary-light: #161b22;
+            --accent: #ff7b72;       
+            --accent-light: #ffa198;
+            --accent-green: #3fb950; 
+            
+            --bg-body: #0d1117;
+            --bg-card: #21262d;
+            --bg-table: #161b22;
+            --text-main: #c9d1d9;
+            --text-heading: #f0f6fc;
+            --text-muted: #8b949e;
+            --border: #30363d;
+            --input-bg: #010409;
+            
+            --success: #3fb950;
+            --warning: #d29922;
+            --error: #f85149;
+            
+            --radius: 12px;
+            --shadow: 0 8px 24px rgba(0,0,0,0.5);
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 4rem;
+            overflow-x: hidden;
+        }
+
+        /* --- Drag & Drop Overlay --- */
+        #drop-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 229, 255, 0.15);
+            backdrop-filter: blur(4px);
+            border: 4px dashed var(--primary);
+            z-index: 9999; display: none;
+            justify-content: center; align-items: center;
+            font-size: 2rem; color: var(--primary); font-weight: bold;
+            pointer-events: none;
+        }
+        body.drag-active #drop-overlay { display: flex; }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 1rem; display: grid; gap: 2rem; }
+
+        /* --- Header --- */
+        header {
+            background: var(--bg-card);
+            border-bottom: 4px solid var(--primary);
+            padding: 2rem 1rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+        header h1 { color: var(--text-heading); margin-bottom: 0.5rem; letter-spacing: 1px; }
+        header .meta { color: var(--text-muted); font-size: 0.95rem; max-width: 700px; margin: 0 auto 1.5rem auto; }
+
+        /* --- Sections & Cards --- */
+        section {
+            background: var(--bg-card); border-radius: var(--radius);
+            box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden;
+            width: 100%;
+        }
+        .section-header {
+            background: var(--primary-light); padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid var(--border); border-left: 5px solid var(--primary);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .section-header h2 { font-size: 1.3rem; color: var(--text-heading); text-transform: uppercase; margin: 0; }
+        .card-body { padding: 1.5rem; }
+
+        .calculation-card {
+            width: calc(100% - 2px);
+            background: var(--bg-table);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+        }
+
+        /* --- Instructional Hints --- */
+        .hint-box {
+            background: rgba(0, 229, 255, 0.05); border-left: 3px solid var(--primary);
+            padding: 1rem; margin-bottom: 1.5rem; font-size: 0.95rem; color: var(--text-muted);
+            border-radius: 0 var(--radius) var(--radius) 0;
+        }
+        .hint-box strong { color: var(--text-heading); }
+
+        /* --- Formula Blocks --- */
+        .formula-card {
+            background: var(--primary-light); border: 1px dashed var(--border);
+            padding: 1rem; border-radius: var(--radius); margin-bottom: 1.5rem;
+            display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-around;
+        }
+        .math-display { font-family: var(--font-mono); font-size: 1.15rem; text-align: center; color: var(--primary); }
+        .math-display.accent { color: var(--accent); }
+        .math-display.green { color: var(--accent-green); }
+        .var-def { font-size: 0.8rem; color: var(--text-muted); display: block; text-align: center; margin-top: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px;}
+
+        /* --- Trace Box --- */
+        .trace-box {
+            background: var(--input-bg); border: 1px solid var(--border); border-left: 4px solid var(--accent);
+            padding: 1rem; border-radius: var(--radius); font-family: var(--font-mono);
+            font-size: 0.9rem; color: var(--text-main); margin-top: 1rem; white-space: pre-wrap; line-height: 1.6;
+            overflow-x: auto; word-wrap: break-word;
+        }
+
+        /* --- Tables --- */
+        .table-container {
+            overflow-x: auto; border: 1px solid var(--border);
+            border-radius: var(--radius); margin-bottom: 1rem; background: var(--bg-table);
+            width: 100%; max-width: 100%;
+        }
+        table { width: calc(100% - 2px); border-collapse: collapse; font-size: 0.95rem; }
+        th { background: rgba(0, 0, 0, 0.3); color: var(--text-main); text-align: center; padding: 0.85rem; font-weight: 600; white-space: nowrap; border-bottom: 2px solid var(--border); }
+        td { padding: 0.5rem; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; }
+        .calc-cell { color: var(--primary); font-weight: bold; font-family: var(--font-mono); }
+        .calc-cell-accent { color: var(--accent); font-weight: bold; font-family: var(--font-mono); }
+        .calc-cell-green { color: var(--accent-green); font-weight: bold; font-family: var(--font-mono); }
+
+        /* Mobile Table Transformation */
+        @media (max-width: 950px) {
+            .card-body { padding: 1rem; }
+            
+            table, thead, tbody, th, td, tr { display: block; width: 100%; }
+            thead tr { position: absolute; top: -9999px; left: -9999px; }
+            tr { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; background: var(--bg-card); overflow: hidden; }
+            td { 
+                border: none; border-bottom: 1px solid var(--border); 
+                padding: 0.75rem 1rem; text-align: right; 
+                display: flex; justify-content: space-between; align-items: center; min-height: 50px;
+            }
+            td:before { 
+                content: attr(data-label); font-weight: bold; color: var(--text-muted); 
+                text-align: left; flex-shrink: 0; padding-right: 1rem;
+            }
+            td:last-child { border-bottom: 0; padding: 1rem; justify-content: center; }
+            td:last-child:before { display: none; }
+            input[type="number"], select { width: 50%; max-width: 150px; text-align: right; }
+            .btn-danger { width: 100%; padding: 0.8rem; font-size: 0.9rem;}
+        }
+
+        /* --- Inputs --- */
+        input[type="number"], select {
+            width: 100%; min-width: 60px; padding: 0.6rem; border: 1px solid var(--border);
+            border-radius: 6px; background: var(--input-bg); color: var(--text-heading);
+            font-family: var(--font-mono); text-align: center; transition: all 0.2s;
+            min-height: 44px; /* A11y Touch Target */
+        }
+        input[type="number"]:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.2); }
+
+        .global-input-group {
+            display: flex; align-items: center; gap: 1rem; background: var(--bg-table);
+            padding: 1rem 1.5rem; border-radius: var(--radius); border: 1px solid var(--border);
+            margin-bottom: 1.5rem; justify-content: center;
+        }
+        .global-input-group label { font-weight: bold; color: var(--accent); font-size: 1.1rem; }
+        .global-input-group input { max-width: 150px; font-size: 1.1rem; border-color: var(--accent); }
+
+        /* --- Buttons & Toolbar --- */
+        .btn-toolbar { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center;}
+        .btn-toolbar.center { justify-content: center; }
+        
+        .btn {
+            border: 1px solid transparent; padding: 0.6rem 1.2rem; border-radius: 6px; cursor: pointer;
+            font-size: 0.85rem; font-weight: 600; transition: all 0.2s; display: inline-flex;
+            align-items: center; justify-content: center; text-transform: uppercase; letter-spacing: 0.5px;
+            min-height: 44px;
+        }
+        .btn-primary { background: var(--primary); color: #000; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-outline { background: transparent; border-color: var(--border); color: var(--text-main); }
+        .btn-outline:hover { background: var(--border); color: #fff; }
+        .btn-danger { background: rgba(248, 81, 73, 0.1); color: var(--error); }
+        .btn-danger:hover { background: rgba(248, 81, 73, 0.2); }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.75rem; min-height: 36px; }
+
+        /* Unsaved Changes Indicator */
+        .btn-unsaved {
+            border-color: var(--warning); color: var(--warning);
+            box-shadow: 0 0 8px rgba(210, 153, 34, 0.3);
+            animation: pulse-warn 2s infinite;
+        }
+        @keyframes pulse-warn {
+            0% { box-shadow: 0 0 0 0 rgba(210, 153, 34, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(210, 153, 34, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(210, 153, 34, 0); }
+        }
+
+        /* --- Badges --- */
+        .badge { 
+            display: inline-block; padding: 0.3rem 0.8rem; border-radius: 12px; 
+            font-size: 0.85rem; font-weight: bold; font-family: var(--font-mono);
+            white-space: nowrap; text-transform: none; 
+        }
+        .badge-good { background: rgba(63, 185, 80, 0.15); color: var(--success); border: 1px solid rgba(63, 185, 80, 0.3); }
+        .badge-warn { background: rgba(210, 153, 34, 0.15); color: var(--warning); border: 1px solid rgba(210, 153, 34, 0.3); }
+        .badge-bad { background: rgba(248, 81, 73, 0.15); color: var(--error); border: 1px solid rgba(248, 81, 73, 0.3); }
+
+        .flex-between { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 0; border-top: 1px solid var(--border); }
+        
+        footer { text-align: center; margin-top: 3rem; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 1.5rem; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    </style>
+</head>
+<body>
+
+    <div id="drop-overlay">Drop JSON File Here to Load</div>
+
+    <header>
+        <h1>Experiment 7: Interference & Diffraction</h1>
+        <p class="meta">
+            Process optics bench measurements to calculate slit widths and separations using diffraction envelopes and interference fringes.
+        </p>
+        <div class="btn-toolbar center">
+             <button id="btn-export" class="btn btn-outline" aria-live="polite">📥 Export Data (JSON)</button>
+             <label class="btn btn-outline">
+                📤 Load Data
+                <input type="file" id="file-import" accept=".json" class="sr-only">
+             </label>
+             <button id="btn-reset" class="btn btn-danger">✖ Reset All</button>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <div class="global-input-group">
+            <label for="global-lam">Laser Wavelength (&lambda;):</label>
+            <input type="number" id="global-lam" value="650" step="any" oninput="updateAll()">
+            <span style="color: var(--text-muted); font-weight: bold;">nm</span>
+        </div>
+
+        <section id="part1">
+            <div class="section-header">
+                <h2>1. Single Slit Diffraction</h2>
+                <span class="badge badge-good">a sin(&theta;) = m&lambda;</span>
+            </div>
+            <div class="card-body">
+                <div class="hint-box">
+                    <strong>Bench Setup:</strong> Place the laser at 0 cm and the single-slit wheel at 4 cm. Record the distance L to the screen. Mark the dark spots (diffraction minima) on both sides of the central peak. Measure the total distance across symmetric dark spots (2y).
+                </div>
+                
+                <div class="formula-card">
+                    <div>
+                        <div class="math-display accent">a = (m &middot; &lambda;) / sin(&theta;)</div>
+                        <span class="var-def">Calculated Slit Width</span>
+                    </div>
+                    <div>
+                        <div class="math-display">&theta; = arctan(y / L)</div>
+                        <span class="var-def">Diffraction Angle</span>
+                    </div>
+                </div>
+
+                <div class="btn-toolbar">
+                    <button class="btn btn-primary btn-sm" onclick="addSingleSlitRow()">+ Add Measurement</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="single-table">
+                        <thead>
+                            <tr>
+                                <th>L (mm)</th>
+                                <th>Set a (mm)</th>
+                                <th>Order (m)</th>
+                                <th>2y (mm)</th>
+                                <th>y (mm)</th>
+                                <th>&theta; (&deg;)</th>
+                                <th>Calc a (mm)</th>
+                                <th>% Error</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="single-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="trace-box" id="single-trace" aria-live="polite"><span style="color: var(--text-muted);">Calculation Trace...</span></div>
+            </div>
+        </section>
+
+        <section id="part2">
+            <div class="section-header">
+                <h2>2. Double Slit: Missing Orders</h2>
+                <span class="badge badge-warn">d / a = m<sub>missing</sub></span>
+            </div>
+            <div class="card-body">
+                <div class="hint-box">
+                    <strong>Bench Setup:</strong> Switch to the double-slit wheel. Locate the first overall dark spot (the diffraction envelope minimum). Count the number of bright interference spots from the center up to that first dark spot. This value (m) should equal the physical ratio of d/a.
+                </div>
+
+                <div class="btn-toolbar">
+                    <button class="btn btn-accent btn-sm" onclick="addEnvelopeRow()">+ Add Envelope Check</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="env-table">
+                        <thead>
+                            <tr>
+                                <th>Set a (mm)</th>
+                                <th>Set d (mm)</th>
+                                <th>Counted m at Minimum</th>
+                                <th>Calc Ratio (d/a)</th>
+                                <th>% Difference</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="env-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="part3">
+            <div class="section-header">
+                <h2>3. Interference Patterns</h2>
+                <span class="badge badge-good">d sin(&theta;) = m&lambda;</span>
+            </div>
+            <div class="card-body">
+                <div class="hint-box">
+                    <strong>Bench Setup:</strong> Keep the double-slit wheel. Mark the locations of the bright spots (interference maxima) on both sides of the central peak. Measure the total distance across symmetric bright spots (2y).
+                </div>
+                
+                <div class="formula-card">
+                    <div>
+                        <div class="math-display green">d = (m &middot; &lambda;) / sin(&theta;)</div>
+                        <span class="var-def">Calculated Slit Separation</span>
+                    </div>
+                </div>
+
+                <div class="btn-toolbar">
+                    <button class="btn btn-primary btn-sm" style="background: var(--accent-green);" onclick="addDoubleSlitRow()">+ Add Measurement</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="double-table">
+                        <thead>
+                            <tr>
+                                <th>L (mm)</th>
+                                <th>Set d (mm)</th>
+                                <th>Order (m)</th>
+                                <th>2y (mm)</th>
+                                <th>y (mm)</th>
+                                <th>&theta; (&deg;)</th>
+                                <th>Calc d (mm)</th>
+                                <th>% Error</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="double-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="trace-box" id="double-trace" aria-live="polite"><span style="color: var(--text-muted);">Calculation Trace...</span></div>
+
+                <div class="calculation-card" style="margin-top: 2rem;">
+                    <h3 style="color: var(--warning); margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Small Angle Approximation Check (Farthest Spot)</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
+                        Does sin(&theta;) &approx; tan(&theta;) &approx; &theta; (in radians)? Input the geometry for the farthest measured spot to verify if the approximation holds.
+                    </p>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; align-items: end;">
+                        <div>
+                            <label style="font-size: 0.85rem; color: var(--text-muted);">L (mm)</label>
+                            <input type="number" id="sa-L" value="1100" step="any" oninput="calcSmallAngle()">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.85rem; color: var(--text-muted);">Farthest y (mm)</label>
+                            <input type="number" id="sa-y" step="any" oninput="calcSmallAngle()">
+                        </div>
+                        <div class="calc-cell" style="padding-bottom: 0.6rem; text-align: center;">
+                            &theta; = <span id="sa-theta">--</span> rad
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem;">
+                        <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); text-align: center; border: 1px solid var(--border);">
+                            <span class="var-def" style="margin-top: 0;">sin(&theta;)</span>
+                            <strong id="sa-sin" style="font-size: 1.2rem; font-family: var(--font-mono); color: var(--text-heading);">--</strong>
+                        </div>
+                        <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); text-align: center; border: 1px solid var(--border);">
+                            <span class="var-def" style="margin-top: 0;">tan(&theta;)</span>
+                            <strong id="sa-tan" style="font-size: 1.2rem; font-family: var(--font-mono); color: var(--text-heading);">--</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-between" style="margin-top: 1rem;">
+                        <span style="font-size: 0.9rem; font-weight: bold; color: var(--text-main);">Difference (%)</span>
+                        <span id="sa-err" class="badge">--</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        PHYS 43 Lab Companion | Computations execute locally
+    </footer>
+
+    <script>
+        // --- STATE & DEFAULTS ---
+        let lastSavedState = null;
+        
+        const DEFAULTS = {
+            single: [{ L: 1060, a: 0.04, m: 1, y2: 34.5 }, { L: 1060, a: 0.08, m: 1, y2: 17.2 }],
+            env: [{ a: 0.08, d: 0.5, m: 6 }, { a: 0.08, d: 0.25, m: 3 }],
+            double: [{ L: 1060, d: 0.25, m: 1, y2: 5.5 }, { L: 1060, d: 0.5, m: 1, y2: 2.8 }]
+        };
+
+        // --- MATH UTILS ---
+        function getLambdaMm() {
+            const nm = parseFloat(document.getElementById('global-lam').value);
+            return isNaN(nm) ? 0 : nm * 1e-6; // nm to mm
+        }
+
+        // --- UI FACTORIES ---
+        function createInput(val, placeholder='', oninputFn) {
+            const input = document.createElement('input');
+            input.type = 'number'; input.step = 'any'; input.value = val;
+            input.placeholder = placeholder; input.oninput = oninputFn;
+            return input;
+        }
+
+        function createDelBtn(row, updateFn) {
+            const btn = document.createElement('button');
+            btn.innerHTML = 'Remove'; btn.className = 'btn btn-danger btn-sm';
+            btn.onclick = () => { row.remove(); updateFn(); };
+            return btn;
+        }
+
+        // --- PART 1: SINGLE SLIT ---
+        function addSingleSlitRow(L='1100', a='0.04', m='1', y2='') {
+            const tbody = document.getElementById('single-body');
+            const row = tbody.insertRow();
+            
+            row.insertCell().appendChild(createInput(L, 'L', updateSingle)).parentNode.setAttribute('data-label', 'L (mm)');
+            row.insertCell().appendChild(createInput(a, 'Set a', updateSingle)).parentNode.setAttribute('data-label', 'Set a (mm)');
+            row.insertCell().appendChild(createInput(m, 'm', updateSingle)).parentNode.setAttribute('data-label', 'Order (m)');
+            row.insertCell().appendChild(createInput(y2, '2y', updateSingle)).parentNode.setAttribute('data-label', '2y (mm)');
+            
+            row.insertCell().setAttribute('data-label', 'y (mm)'); row.cells[4].className = 'calc-cell'; row.cells[4].innerText = '--';
+            row.insertCell().setAttribute('data-label', 'θ (°)'); row.cells[5].className = 'calc-cell'; row.cells[5].innerText = '--';
+            row.insertCell().setAttribute('data-label', 'Calc a'); row.cells[6].className = 'calc-cell-accent'; row.cells[6].innerText = '--';
+            row.insertCell().setAttribute('data-label', '% Err'); row.cells[7].innerText = '--';
+            
+            row.insertCell().appendChild(createDelBtn(row, updateSingle));
+            updateSingle();
+        }
+
+        function updateSingle() {
+            const rows = document.getElementById('single-body').rows;
+            const lam = getLambdaMm();
+            let trace = '';
+
+            for(let i=0; i<rows.length; i++) {
+                const r = rows[i];
+                const inputs = r.querySelectorAll('input');
+                const L = parseFloat(inputs[0].value);
+                const set_a = parseFloat(inputs[1].value);
+                const m = parseFloat(inputs[2].value);
+                const y2 = parseFloat(inputs[3].value);
+
+                if(!isNaN(L) && !isNaN(m) && !isNaN(y2) && L > 0) {
+                    const y = y2 / 2;
+                    const thetaRad = Math.atan(y / L);
+                    const thetaDeg = thetaRad * (180 / Math.PI);
+                    const calc_a = (m * lam) / Math.sin(thetaRad);
+                    
+                    r.cells[4].innerText = y.toFixed(2);
+                    r.cells[5].innerText = thetaDeg.toFixed(3);
+                    r.cells[6].innerText = calc_a.toFixed(5);
+                    
+                    if(!isNaN(set_a) && set_a > 0) {
+                        const err = Math.abs((calc_a - set_a) / set_a) * 100;
+                        r.cells[7].innerHTML = `<span class="badge ${err < 10 ? 'badge-good' : 'badge-warn'}">${err.toFixed(1)}%</span>`;
+                    } else {
+                        r.cells[7].innerText = '--';
+                    }
+
+                    trace = `Row ${i+1} Trace (Dark Spot):\n` +
+                            `y = 2y / 2 = ${y2} / 2 = ${y.toFixed(2)} mm\n` +
+                            `&theta; = arctan(y/L) = arctan(${y.toFixed(2)} / ${L}) = ${thetaDeg.toFixed(3)}&deg;\n` +
+                            `a = m&lambda; / sin(&theta;) = (${m} &middot; ${lam.toExponential(2)}) / sin(${thetaRad.toFixed(4)} rad)\n` +
+                            `a = <span style="color:var(--accent)">${calc_a.toFixed(5)} mm</span>`;
+                } else {
+                    r.cells[4].innerText = '--'; r.cells[5].innerText = '--'; r.cells[6].innerText = '--'; r.cells[7].innerText = '--';
+                }
+            }
+            
+            document.getElementById('single-trace').innerHTML = trace || '<span style="color: var(--text-muted);">Enter measurement data to view derivation...</span>';
+            checkUnsavedState();
+        }
+
+        // --- PART 2: DOUBLE SLIT ENVELOPE ---
+        function addEnvelopeRow(a='0.08', d='0.5', m='') {
+            const tbody = document.getElementById('env-body');
+            const row = tbody.insertRow();
+            
+            row.insertCell().appendChild(createInput(a, 'Set a', updateEnvelope)).parentNode.setAttribute('data-label', 'Set a (mm)');
+            row.insertCell().appendChild(createInput(d, 'Set d', updateEnvelope)).parentNode.setAttribute('data-label', 'Set d (mm)');
+            row.insertCell().appendChild(createInput(m, 'm', updateEnvelope)).parentNode.setAttribute('data-label', 'Counted m');
+            
+            row.insertCell().setAttribute('data-label', 'Calc Ratio'); row.cells[3].className = 'calc-cell-accent'; row.cells[3].innerText = '--';
+            row.insertCell().setAttribute('data-label', '% Diff'); row.cells[4].innerText = '--';
+            
+            row.insertCell().appendChild(createDelBtn(row, updateEnvelope));
+            updateEnvelope();
+        }
+
+        function updateEnvelope() {
+            const rows = document.getElementById('env-body').rows;
+            for(let r of rows) {
+                const inputs = r.querySelectorAll('input');
+                const a = parseFloat(inputs[0].value);
+                const d = parseFloat(inputs[1].value);
+                const m = parseFloat(inputs[2].value);
+
+                if(!isNaN(a) && !isNaN(d) && a > 0) {
+                    const ratio = d / a;
+                    r.cells[3].innerText = ratio.toFixed(2);
+                    
+                    if(!isNaN(m) && m > 0) {
+                        const err = Math.abs((m - ratio) / ratio) * 100;
+                        r.cells[4].innerHTML = `<span class="badge ${err < 10 ? 'badge-good' : 'badge-warn'}">${err.toFixed(1)}%</span>`;
+                    } else {
+                        r.cells[4].innerText = '--';
+                    }
+                } else {
+                    r.cells[3].innerText = '--'; r.cells[4].innerText = '--';
+                }
+            }
+            checkUnsavedState();
+        }
+
+        // --- PART 3: DOUBLE SLIT INTERFERENCE ---
+        function addDoubleSlitRow(L='1100', d='0.25', m='1', y2='') {
+            const tbody = document.getElementById('double-body');
+            const row = tbody.insertRow();
+            
+            row.insertCell().appendChild(createInput(L, 'L', updateDouble)).parentNode.setAttribute('data-label', 'L (mm)');
+            row.insertCell().appendChild(createInput(d, 'Set d', updateDouble)).parentNode.setAttribute('data-label', 'Set d (mm)');
+            row.insertCell().appendChild(createInput(m, 'm', updateDouble)).parentNode.setAttribute('data-label', 'Order (m)');
+            row.insertCell().appendChild(createInput(y2, '2y', updateDouble)).parentNode.setAttribute('data-label', '2y (mm)');
+            
+            row.insertCell().setAttribute('data-label', 'y (mm)'); row.cells[4].className = 'calc-cell'; row.cells[4].innerText = '--';
+            row.insertCell().setAttribute('data-label', 'θ (°)'); row.cells[5].className = 'calc-cell'; row.cells[5].innerText = '--';
+            row.insertCell().setAttribute('data-label', 'Calc d'); row.cells[6].className = 'calc-cell-green'; row.cells[6].innerText = '--';
+            row.insertCell().setAttribute('data-label', '% Err'); row.cells[7].innerText = '--';
+            
+            row.insertCell().appendChild(createDelBtn(row, updateDouble));
+            updateDouble();
+        }
+
+        function updateDouble() {
+            const rows = document.getElementById('double-body').rows;
+            const lam = getLambdaMm();
+            let trace = '';
+
+            for(let i=0; i<rows.length; i++) {
+                const r = rows[i];
+                const inputs = r.querySelectorAll('input');
+                const L = parseFloat(inputs[0].value);
+                const set_d = parseFloat(inputs[1].value);
+                const m = parseFloat(inputs[2].value);
+                const y2 = parseFloat(inputs[3].value);
+
+                if(!isNaN(L) && !isNaN(m) && !isNaN(y2) && L > 0) {
+                    const y = y2 / 2;
+                    const thetaRad = Math.atan(y / L);
+                    const thetaDeg = thetaRad * (180 / Math.PI);
+                    const calc_d = (m * lam) / Math.sin(thetaRad);
+                    
+                    r.cells[4].innerText = y.toFixed(2);
+                    r.cells[5].innerText = thetaDeg.toFixed(3);
+                    r.cells[6].innerText = calc_d.toFixed(5);
+                    
+                    if(!isNaN(set_d) && set_d > 0) {
+                        const err = Math.abs((calc_d - set_d) / set_d) * 100;
+                        r.cells[7].innerHTML = `<span class="badge ${err < 10 ? 'badge-good' : 'badge-warn'}">${err.toFixed(1)}%</span>`;
+                    } else {
+                        r.cells[7].innerText = '--';
+                    }
+
+                    trace = `Row ${i+1} Trace (Bright Spot):\n` +
+                            `y = 2y / 2 = ${y2} / 2 = ${y.toFixed(2)} mm\n` +
+                            `&theta; = arctan(y/L) = arctan(${y.toFixed(2)} / ${L}) = ${thetaDeg.toFixed(3)}&deg;\n` +
+                            `d = m&lambda; / sin(&theta;) = (${m} &middot; ${lam.toExponential(2)}) / sin(${thetaRad.toFixed(4)} rad)\n` +
+                            `d = <span style="color:var(--accent-green)">${calc_d.toFixed(5)} mm</span>`;
+                } else {
+                    r.cells[4].innerText = '--'; r.cells[5].innerText = '--'; r.cells[6].innerText = '--'; r.cells[7].innerText = '--';
+                }
+            }
+            
+            document.getElementById('double-trace').innerHTML = trace || '<span style="color: var(--text-muted);">Enter measurement data to view derivation...</span>';
+            checkUnsavedState();
+        }
+
+        // --- SMALL ANGLE CHECK ---
+        function calcSmallAngle() {
+            const L = parseFloat(document.getElementById('sa-L').value);
+            const y = parseFloat(document.getElementById('sa-y').value);
+            
+            const elTheta = document.getElementById('sa-theta');
+            const elSin = document.getElementById('sa-sin');
+            const elTan = document.getElementById('sa-tan');
+            const elErr = document.getElementById('sa-err');
+
+            if(!isNaN(L) && !isNaN(y) && L > 0) {
+                const thetaRad = Math.atan(y / L);
+                const sinV = Math.sin(thetaRad);
+                const tanV = Math.tan(thetaRad); // which is just y/L
+                
+                elTheta.innerText = thetaRad.toFixed(5);
+                elSin.innerText = sinV.toFixed(5);
+                elTan.innerText = tanV.toFixed(5);
+                
+                const err = Math.abs((tanV - sinV) / sinV) * 100;
+                elErr.innerText = err.toFixed(3) + '%';
+                elErr.className = `badge ${err < 1 ? 'badge-good' : 'badge-warn'}`;
+            } else {
+                elTheta.innerText = '--'; elSin.innerText = '--'; elTan.innerText = '--';
+                elErr.innerText = '--'; elErr.className = 'badge';
+            }
+            checkUnsavedState();
+        }
+
+        // --- DATA PERSISTENCE & UTILS ---
+        function updateAll() {
+            updateSingle();
+            updateEnvelope();
+            updateDouble();
+            calcSmallAngle();
+        }
+
+        function gatherData() {
+            const data = { lam: document.getElementById('global-lam').value, single: [], env: [], double: [], sa: {} };
+            document.querySelectorAll('#single-body tr').forEach(r => { const i = r.querySelectorAll('input'); data.single.push({ L: i[0].value, a: i[1].value, m: i[2].value, y2: i[3].value }); });
+            document.querySelectorAll('#env-body tr').forEach(r => { const i = r.querySelectorAll('input'); data.env.push({ a: i[0].value, d: i[1].value, m: i[2].value }); });
+            document.querySelectorAll('#double-body tr').forEach(r => { const i = r.querySelectorAll('input'); data.double.push({ L: i[0].value, d: i[1].value, m: i[2].value, y2: i[3].value }); });
+            data.sa = { L: document.getElementById('sa-L').value, y: document.getElementById('sa-y').value };
+            return data;
+        }
+
+        function checkUnsavedState() {
+            const currentStr = JSON.stringify(gatherData());
+            const btn = document.getElementById('btn-export');
+            if (lastSavedState !== null && currentStr !== lastSavedState) {
+                btn.classList.add('btn-unsaved'); btn.innerHTML = '📥 Export Data (Unsaved*)';
+            } else {
+                btn.classList.remove('btn-unsaved'); btn.innerHTML = '📥 Export Data (JSON)';
+            }
+            localStorage.setItem('phys43_lab7_data_autosave', currentStr);
+        }
+
+        function markAsSaved() {
+            lastSavedState = JSON.stringify(gatherData());
+            checkUnsavedState();
+        }
+
+        function loadData(sourceData) {
+            document.getElementById('single-body').innerHTML = '';
+            document.getElementById('env-body').innerHTML = '';
+            document.getElementById('double-body').innerHTML = '';
+
+            if(sourceData) {
+                if(sourceData.lam) document.getElementById('global-lam').value = sourceData.lam;
+                if(sourceData.single) sourceData.single.forEach(d => addSingleSlitRow(d.L, d.a, d.m, d.y2));
+                if(sourceData.env) sourceData.env.forEach(d => addEnvelopeRow(d.a, d.d, d.m));
+                if(sourceData.double) sourceData.double.forEach(d => addDoubleSlitRow(d.L, d.d, d.m, d.y2));
+                if(sourceData.sa) {
+                    if(sourceData.sa.L) document.getElementById('sa-L').value = sourceData.sa.L;
+                    if(sourceData.sa.y) document.getElementById('sa-y').value = sourceData.sa.y;
+                }
+            } else {
+                DEFAULTS.single.forEach(d => addSingleSlitRow(d.L, d.a, d.m, d.y2));
+                DEFAULTS.env.forEach(d => addEnvelopeRow(d.a, d.d, d.m));
+                DEFAULTS.double.forEach(d => addDoubleSlitRow(d.L, d.d, d.m, d.y2));
+            }
+            updateAll();
+            markAsSaved(); 
+        }
+
+        // --- EVENT LISTENERS ---
+
+        // Enter Key Flow
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                e.preventDefault(); 
+                const inputs = Array.from(document.querySelectorAll('section input[type="number"]'));
+                const index = inputs.indexOf(e.target);
+                
+                if (index > -1) {
+                    if (index < inputs.length - 1) {
+                        inputs[index + 1].focus(); 
+                    } else {
+                        // Figure out which table we are in
+                        const tbody = e.target.closest('tbody');
+                        if(tbody) {
+                            if(tbody.id === 'single-body') addSingleSlitRow();
+                            else if(tbody.id === 'env-body') addEnvelopeRow();
+                            else if(tbody.id === 'double-body') addDoubleSlitRow();
+                            
+                            setTimeout(() => {
+                                const newInputs = Array.from(document.querySelectorAll('section input[type="number"]'));
+                                if(newInputs.length > inputs.length) newInputs[index + 1].focus();
+                            }, 50);
+                        }
+                    }
+                }
+            }
+        });
+
+        // Drag & Drop JSON
+        const dropZone = document.body;
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); document.body.classList.add('drag-active'); });
+        dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); document.body.classList.remove('drag-active'); });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault(); document.body.classList.remove('drag-active');
+            if (e.dataTransfer.files.length) {
+                const file = e.dataTransfer.files[0];
+                if (!file.name.endsWith('.json')) return alert('Please drop a valid JSON file.');
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try { loadData(JSON.parse(ev.target.result)); } 
+                    catch(err) { alert("Invalid JSON file structure."); }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // Toolbar Buttons
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            if(confirm("Clear all data and reset table to default?")) { 
+                localStorage.removeItem('phys43_lab7_data_autosave'); 
+                loadData(null); 
+                lastSavedState = null; checkUnsavedState(); 
+            }
+        });
+
+        document.getElementById('btn-export').addEventListener('click', () => {
+            const dataStr = JSON.stringify(gatherData());
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([dataStr], {type: 'application/json'}));
+            a.download = 'phys43_lab7_interference.json';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            markAsSaved(); 
+        });
+
+        document.getElementById('file-import').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const r = new FileReader();
+            r.onload = (ev) => {
+                try { loadData(JSON.parse(ev.target.result)); } 
+                catch(err) { alert("Invalid JSON file."); }
+                e.target.value = ''; 
+            };
+            r.readAsText(file);
+        });
+
+        // Init
+        window.addEventListener('DOMContentLoaded', () => {
+            const autosaved = localStorage.getItem('phys43_lab7_data_autosave');
+            if (autosaved) {
+                try { loadData(JSON.parse(autosaved)); } 
+                catch(e) { loadData(null); }
+            } else {
+                loadData(null);
+            }
+        });
+    </script>
+</body>
+</html>
