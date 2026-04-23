@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHYS 43 Lab 9: Photoelectric Effect</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* Theme: Quantum/UV (Dark/Neon Purple & Cyan) */
+            --primary: #00e5ff;      
+            --primary-dark: #00b3cc;
+            --primary-light: #161b22;
+            --accent: #b056ff;       
+            --accent-light: #d6a1ff;
+            --accent-green: #3fb950; 
+            
+            --bg-body: #0d1117;
+            --bg-card: #21262d;
+            --bg-table: #161b22;
+            --text-main: #c9d1d9;
+            --text-heading: #f0f6fc;
+            --text-muted: #8b949e;
+            --border: #30363d;
+            --input-bg: #010409;
+            
+            --success: #3fb950;
+            --warning: #d29922;
+            --error: #f85149;
+            
+            --radius: 12px;
+            --shadow: 0 8px 24px rgba(0,0,0,0.5);
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 4rem;
+            overflow-x: hidden;
+        }
+
+        /* --- Drag & Drop Overlay --- */
+        #drop-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(176, 86, 255, 0.15);
+            backdrop-filter: blur(4px);
+            border: 4px dashed var(--accent);
+            z-index: 9999; display: none;
+            justify-content: center; align-items: center;
+            font-size: 2rem; color: var(--accent); font-weight: bold;
+            pointer-events: none;
+        }
+        body.drag-active #drop-overlay { display: flex; }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 1rem; display: grid; gap: 2rem; }
+
+        /* --- Header --- */
+        header {
+            background: var(--bg-card);
+            border-bottom: 4px solid var(--accent);
+            padding: 2rem 1rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+        header h1 { color: var(--text-heading); margin-bottom: 0.5rem; letter-spacing: 1px; }
+        header .meta { color: var(--text-muted); font-size: 0.95rem; max-width: 700px; margin: 0 auto 1.5rem auto; }
+
+        /* --- Sections & Cards --- */
+        section {
+            background: var(--bg-card); border-radius: var(--radius);
+            box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden;
+            width: 100%;
+        }
+        .section-header {
+            background: var(--primary-light); padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid var(--border); border-left: 5px solid var(--accent);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .section-header h2 { font-size: 1.3rem; color: var(--text-heading); text-transform: uppercase; margin: 0; }
+        .card-body { padding: 1.5rem; }
+
+        /* --- Instructional Hints --- */
+        .hint-box {
+            background: rgba(176, 86, 255, 0.05); border-left: 3px solid var(--accent);
+            padding: 1rem; margin-bottom: 1.5rem; font-size: 0.95rem; color: var(--text-muted);
+            border-radius: 0 var(--radius) var(--radius) 0;
+        }
+        .hint-box strong { color: var(--text-heading); }
+
+        /* --- Formula Blocks --- */
+        .formula-card {
+            background: var(--primary-light); border: 1px dashed var(--border);
+            padding: 1rem; border-radius: var(--radius); margin-bottom: 1.5rem;
+            display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-around;
+        }
+        .math-display { font-family: var(--font-mono); font-size: 1.15rem; text-align: center; color: var(--accent); }
+        .math-display.primary { color: var(--primary); }
+        .math-display.green { color: var(--accent-green); }
+        .var-def { font-size: 0.8rem; color: var(--text-muted); display: block; text-align: center; margin-top: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px;}
+
+        /* --- Trace Box --- */
+        .trace-box {
+            background: var(--input-bg); border: 1px solid var(--border); border-left: 4px solid var(--primary);
+            padding: 1rem; border-radius: var(--radius); font-family: var(--font-mono);
+            font-size: 0.9rem; color: var(--text-main); margin-top: 1rem; white-space: pre-wrap; line-height: 1.6;
+            overflow-x: auto; word-wrap: break-word;
+        }
+
+        /* --- Layouts --- */
+        .grid-layout { 
+            display: grid; 
+            grid-template-columns: 2fr 1fr; 
+            gap: 2rem; 
+            width: 100%;
+        }
+        .grid-layout-even {
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 2rem; 
+            width: 100%;
+        }
+        .grid-layout > div, .grid-layout-even > div { min-width: 0; }
+
+        /* --- Mobile-Optimized Tables --- */
+        .table-container {
+            overflow-x: auto; border: 1px solid var(--border);
+            border-radius: var(--radius); margin-bottom: 1rem; background: var(--bg-table);
+            width: 100%; max-width: 100%;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        th { background: rgba(0, 0, 0, 0.3); color: var(--text-main); text-align: center; padding: 0.85rem; font-weight: 600; white-space: nowrap; border-bottom: 2px solid var(--border); }
+        td { padding: 0.5rem; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; }
+        .calc-cell { color: var(--primary); font-weight: bold; font-family: var(--font-mono); }
+        .calc-cell-accent { color: var(--accent); font-weight: bold; font-family: var(--font-mono); }
+
+        /* Mobile Table Transformation */
+        @media (max-width: 1050px) {
+            .grid-layout, .grid-layout-even { grid-template-columns: 1fr; }
+            .card-body { padding: 1rem; }
+            
+            table, thead, tbody, th, td, tr { display: block; width: 100%; }
+            thead tr { position: absolute; top: -9999px; left: -9999px; }
+            tr { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; background: var(--bg-card); overflow: hidden; }
+            td { 
+                border: none; border-bottom: 1px solid var(--border); position: relative; 
+                padding: 0.75rem 1rem 0.75rem 45%; text-align: right; 
+                display: flex; justify-content: flex-end; align-items: center; min-height: 50px;
+            }
+            td:before { 
+                content: attr(data-label); position: absolute; left: 1rem; width: 40%; 
+                white-space: nowrap; font-weight: bold; color: var(--text-muted); 
+                text-align: left; top: 50%; transform: translateY(-50%); 
+            }
+            td:last-child { border-bottom: 0; padding: 1rem; justify-content: center; }
+            td:last-child:before { display: none; }
+            input[type="number"], select { width: 100%; max-width: 160px; text-align: right; }
+            .btn-danger { width: 100%; padding: 0.8rem; font-size: 0.9rem;}
+        }
+
+        /* --- Inputs --- */
+        input[type="number"], select {
+            width: 100%; min-width: 60px; padding: 0.6rem; border: 1px solid var(--border);
+            border-radius: 6px; background: var(--input-bg); color: var(--text-heading);
+            font-family: var(--font-mono); text-align: center; transition: all 0.2s;
+        }
+        input[type="number"]:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(176, 86, 255, 0.2); }
+
+        /* --- Buttons & Toolbar --- */
+        .btn-toolbar { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center;}
+        .btn-toolbar.center { justify-content: center; }
+        .btn-toolbar.right { justify-content: flex-end; }
+        
+        .btn {
+            border: 1px solid transparent; padding: 0.6rem 1.2rem; border-radius: 6px; cursor: pointer;
+            font-size: 0.85rem; font-weight: 600; transition: all 0.2s; display: inline-flex;
+            align-items: center; justify-content: center; text-transform: uppercase; letter-spacing: 0.5px;
+            min-height: 44px;
+        }
+        .btn-primary { background: var(--primary); color: #000; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-accent { background: var(--accent); color: #fff; }
+        .btn-accent:hover { background: #9d3bf0; }
+        .btn-outline { background: transparent; border-color: var(--border); color: var(--text-main); }
+        .btn-outline:hover { background: var(--border); color: #fff; }
+        .btn-danger { background: rgba(248, 81, 73, 0.1); color: var(--error); }
+        .btn-danger:hover { background: rgba(248, 81, 73, 0.2); }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.75rem; min-height: 36px; }
+
+        /* Unsaved Changes Indicator */
+        .btn-unsaved {
+            border-color: var(--warning); color: var(--warning);
+            box-shadow: 0 0 8px rgba(210, 153, 34, 0.3);
+            animation: pulse-warn 2s infinite;
+        }
+        @keyframes pulse-warn {
+            0% { box-shadow: 0 0 0 0 rgba(210, 153, 34, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(210, 153, 34, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(210, 153, 34, 0); }
+        }
+
+        /* --- Analysis & Stats --- */
+        .analysis-box {
+            background: var(--primary-light); padding: 1.5rem; border-radius: var(--radius);
+            border: 1px solid var(--border); display: flex; flex-direction: column; width: 100%; height: 100%;
+        }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card {
+            background: var(--bg-card); padding: 1.2rem 1rem; border-radius: var(--radius);
+            text-align: center; border: 1px solid var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .stat-card span { display: block; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
+        .stat-card strong { font-size: 1.4rem; color: var(--text-heading); font-family: var(--font-mono); margin-top: 0.4rem; display: block;}
+        .stat-card .primary-val { color: var(--primary); }
+        .stat-card .accent-val { color: var(--accent-light); }
+
+        /* --- Badges --- */
+        .badge { 
+            display: inline-block; padding: 0.3rem 0.8rem; border-radius: 12px; 
+            font-size: 0.85rem; font-weight: bold; font-family: var(--font-mono);
+            white-space: nowrap; 
+        }
+        .badge-good { background: rgba(63, 185, 80, 0.15); color: var(--success); border: 1px solid rgba(63, 185, 80, 0.3); }
+        .badge-warn { background: rgba(210, 153, 34, 0.15); color: var(--warning); border: 1px solid rgba(210, 153, 34, 0.3); }
+        .badge-bad { background: rgba(248, 81, 73, 0.15); color: var(--error); border: 1px solid rgba(248, 81, 73, 0.3); }
+
+        /* --- Charts --- */
+        .chart-wrapper {
+            position: relative; height: 350px; width: 100%; background: var(--bg-card);
+            border-radius: var(--radius); padding: 0.5rem; border: 1px solid var(--border);
+            margin-top: 1rem; flex-grow: 1;
+        }
+
+        /* --- Utilities --- */
+        .flex-between { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 0; border-top: 1px solid var(--border); }
+        .mt-1 { margin-top: 1rem; } .mb-1 { margin-bottom: 1rem; }
+        footer { text-align: center; margin-top: 3rem; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 1.5rem; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    </style>
+</head>
+<body>
+
+    <div id="drop-overlay">Drop JSON File Here to Load</div>
+
+    <header>
+        <h1>Experiment 9: Photoelectric Effect</h1>
+        <p class="meta">
+            Process optics bench measurements to calculate Planck's constant and the work function of the emitter material.
+        </p>
+        <div class="btn-toolbar center">
+             <button id="btn-export" class="btn btn-outline" aria-live="polite">📥 Export Data (JSON)</button>
+             <label class="btn btn-outline">
+                📤 Load Data
+                <input type="file" id="file-import" accept=".json" class="sr-only">
+             </label>
+             <button id="btn-reset" class="btn btn-danger">✖ Reset All</button>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <section id="part1">
+            <div class="section-header">
+                <h2>1. Current vs. Voltage</h2>
+                <span class="badge badge-good">I-V Characteristic Curve</span>
+            </div>
+            <div class="card-body">
+                <div class="hint-box">
+                    <strong>Bench Setup:</strong> Using the 436 nm filter and 2 mm aperture, sweep the voltage from -4.00V up to +30.0V and record the resulting photocurrent. Locate the precise stopping voltage (V<sub>stop</sub>) where the current drops to zero. Note: The equipment provides a negative stopping voltage; record the magnitude (positive).
+                </div>
+
+                <div class="grid-layout">
+                    <div>
+                        <div class="btn-toolbar mb-1">
+                            <button class="btn btn-primary btn-sm" onclick="addIVRow()">+ Add V/I Point</button>
+                            <button class="btn btn-outline btn-sm" onclick="populateIVDefaults()">Load Default Sweep Range</button>
+                        </div>
+                        <div class="table-container">
+                            <table id="iv-table">
+                                <thead>
+                                    <tr>
+                                        <th>Voltage (V)</th>
+                                        <th>Current (A) <br><span style="font-size:0.75rem; font-weight:normal;">x 10⁻¹¹</span></th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="iv-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="analysis-box">
+                        <h3 style="color: var(--text-heading); margin-bottom: 0.5rem; font-size: 1.1rem;">I-V Curve Profile</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Ideally, current should scale linearly then plateau (saturation) as all emitted photoelectrons are collected by the anode.</p>
+                        
+                        <div class="chart-wrapper">
+                            <canvas id="ivChart"></canvas>
+                        </div>
+                        <div class="btn-toolbar right mt-1">
+                            <button class="btn btn-outline btn-sm" onclick="exportHighResChart('c1', 'Photoelectric_IV_Curve.png')">📸 Export Graph</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part2">
+            <div class="section-header">
+                <h2>2. Stopping Voltage vs Intensity</h2>
+                <span class="badge badge-warn">Constant V<sub>stop</sub></span>
+            </div>
+            <div class="card-body">
+                <div class="hint-box">
+                    <strong>Bench Setup:</strong> Keep the 436 nm filter. Change the aperture to modulate the light intensity entering the photodiode. Measure the stopping voltage for each aperture. In the quantum model, intensity affects photocurrent magnitude but NOT maximum kinetic energy (V<sub>stop</sub>).
+                </div>
+                
+                <div class="grid-layout-even">
+                    <div>
+                        <div class="table-container" style="margin-top: 0.5rem;">
+                            <table id="intensity-table">
+                                <thead>
+                                    <tr>
+                                        <th>Aperture (mm)</th>
+                                        <th>Stopping Voltage V<sub>stop</sub> (V)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="intensity-body">
+                                    <tr>
+                                        <td data-label="Aperture (mm)">2</td>
+                                        <td data-label="V_stop (V)"><input type="number" class="vstop-int" step="any" oninput="updateCalculations()"></td>
+                                    </tr>
+                                    <tr>
+                                        <td data-label="Aperture (mm)">4</td>
+                                        <td data-label="V_stop (V)"><input type="number" class="vstop-int" step="any" oninput="updateCalculations()"></td>
+                                    </tr>
+                                    <tr>
+                                        <td data-label="Aperture (mm)">8</td>
+                                        <td data-label="V_stop (V)"><input type="number" class="vstop-int" step="any" oninput="updateCalculations()"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; justify-content: center;">
+                        <div style="background: var(--bg-card); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); text-align: center;">
+                            <h3 style="color: var(--text-muted); font-size: 1rem; margin-bottom: 0.5rem; text-transform: uppercase;">Variance Check</h3>
+                            <strong id="intensity-variance" style="font-size: 1.5rem; color: var(--text-heading); font-family: var(--font-mono);">--</strong>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">
+                                If the variance is low (< 5%), it confirms Einstein's model: photon energy depends on frequency, not intensity.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part3">
+            <div class="section-header">
+                <h2>3. Stopping Voltage vs Wavelength</h2>
+                <span class="badge badge-good">eV<sub>stop</sub> = hf - &Phi;</span>
+            </div>
+            <div class="card-body">
+                <div class="hint-box">
+                    <strong>Bench Setup:</strong> Set aperture to 8 mm. Sweep through the standard mercury vapor spectral lines (wavelengths) using the filter wheel. Record the stopping voltage for each. The slope of V<sub>stop</sub> vs Frequency yields Planck's constant ($h/e$), and the intercept yields the work function.
+                </div>
+                
+                <div class="formula-card">
+                    <div>
+                        <div class="math-display primary">V<sub>stop</sub> = (h / e) f - (&Phi; / e)</div>
+                        <span class="var-def">Linear Equation Form (y = mx + b)</span>
+                    </div>
+                    <div>
+                        <div class="math-display accent">h = m &middot; e</div>
+                        <span class="var-def">Planck's Constant</span>
+                    </div>
+                    <div>
+                        <div class="math-display green">&Phi; = -b &middot; e</div>
+                        <span class="var-def">Work Function</span>
+                    </div>
+                </div>
+
+                <div class="grid-layout">
+                    <div>
+                        <div class="btn-toolbar mb-1">
+                            <button class="btn btn-accent btn-sm" onclick="addWavelengthRow()">+ Add Wavelength</button>
+                            <button class="btn btn-outline btn-sm" onclick="populateHgLines()">Load Hg Spectral Lines</button>
+                        </div>
+                        <div class="table-container">
+                            <table id="lambda-table">
+                                <thead>
+                                    <tr>
+                                        <th>&lambda; (nm)</th>
+                                        <th>Freq f (x10¹⁴ Hz)</th>
+                                        <th>V<sub>stop</sub> (V)</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lambda-body"></tbody>
+                            </table>
+                        </div>
+                        <div class="trace-box" id="calc-trace"><span style="color: var(--text-muted);">Live Calculation Trace (Enter data to see derivation)...</span></div>
+                    </div>
+
+                    <div class="analysis-box">
+                        <h3 style="color: var(--text-heading); margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; font-size: 1.1rem;">Calculated Constants</h3>
+                        <div class="stat-grid">
+                            <div class="stat-card" style="border-top: 3px solid var(--accent);">
+                                <span>Exp Planck's h (J&middot;s)</span>
+                                <strong id="stat-h-joules" class="accent-val" style="font-size: 1.3rem;">--</strong>
+                            </div>
+                            <div class="stat-card" style="border-top: 3px solid var(--primary);">
+                                <span>Exp Work Func &Phi; (eV)</span>
+                                <strong id="stat-phi" class="primary-val" style="font-size: 1.3rem;">--</strong>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1rem;">
+                            <div class="flex-between" style="border: none; padding-top: 0;">
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">Accepted h:</span>
+                                <strong style="font-family: var(--font-mono); color: var(--text-heading);">6.626e-34 J&middot;s</strong>
+                            </div>
+                            <div class="flex-between" style="padding-bottom: 0;">
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">% Error (h):</span>
+                                <span id="stat-error-h" class="badge">--</span>
+                            </div>
+                        </div>
+
+                        <div class="chart-wrapper">
+                            <canvas id="hChart"></canvas>
+                        </div>
+                        <div class="btn-toolbar right mt-1">
+                            <button class="btn btn-outline btn-sm" onclick="exportHighResChart('c2', 'Plancks_Constant_Graph.png')">📸 Export Graph</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        PHYS 43 Lab Companion | Computations execute locally in your browser.
+    </footer>
+
+    <script>
+        // --- GLOBAL STATE & CONSTANTS ---
+        const C_SPEED = 299792458; // m/s
+        const E_CHARGE = 1.60217663e-19; // C
+        const ACCEPTED_H = 6.62607015e-34; // J*s
+        
+        let ivChart = null;
+        let hChart = null;
+        let chartMeta = { c1: null, c2: null };
+        let lastSavedState = null;
+
+        const IV_DEFAULTS = [
+            {v: -4.0, i: 0}, {v: -2.0, i: 0}, {v: -1.0, i: 0}, 
+            {v: 0.0, i: 2.1}, {v: 2.0, i: 5.4}, {v: 4.0, i: 7.8}, 
+            {v: 6.0, i: 9.5}, {v: 10.0, i: 11.2}, {v: 20.0, i: 12.5}, {v: 30.0, i: 13.0}
+        ];
+
+        const HG_LINES = [365, 405, 436, 546, 577];
+
+        // --- MATH UTILS ---
+        function linearFit(x, y) {
+            const n = x.length;
+            if (n < 2) return null;
+            let sumX=0, sumY=0, sumXY=0, sumXX=0;
+            for(let i=0; i<n; i++) {
+                sumX += x[i]; sumY += y[i];
+                sumXY += x[i]*y[i]; sumXX += x[i]*x[i];
+            }
+            const slope = (n*sumXY - sumX*sumY) / (n*sumXX - sumX*sumX);
+            const intercept = (sumY - slope*sumX) / n;
+            const yMean = sumY / n;
+            let ssTot=0, ssRes=0;
+            for(let i=0; i<n; i++) {
+                ssTot += Math.pow(y[i] - yMean, 2);
+                ssRes += Math.pow(y[i] - (slope*x[i] + intercept), 2);
+            }
+            return { slope, intercept, r2: 1 - (ssRes/ssTot) };
+        }
+
+        // --- UI & TABLE LOGIC ---
+        function createInput(val, placeholder='', oninputFn) {
+            const input = document.createElement('input');
+            input.type = 'number'; input.step = 'any'; input.value = val;
+            input.placeholder = placeholder; input.oninput = oninputFn;
+            return input;
+        }
+
+        function createDelBtn(row, updateFn) {
+            const btn = document.createElement('button');
+            btn.innerHTML = 'Remove'; btn.className = 'btn btn-danger btn-sm';
+            btn.onclick = () => { row.remove(); updateFn(); };
+            return btn;
+        }
+
+        // --- PART 1: I-V CURVE ---
+        function addIVRow(v='', i='') {
+            const tbody = document.getElementById('iv-body');
+            const row = tbody.insertRow();
+            
+            row.insertCell().appendChild(createInput(v, 'Voltage', updateCalculations)).parentNode.setAttribute('data-label', 'Voltage (V)');
+            row.insertCell().appendChild(createInput(i, 'Current', updateCalculations)).parentNode.setAttribute('data-label', 'Current (10⁻¹¹ A)');
+            row.insertCell().appendChild(createDelBtn(row, updateCalculations));
+            updateCalculations();
+        }
+
+        function populateIVDefaults() {
+            document.getElementById('iv-body').innerHTML = '';
+            IV_DEFAULTS.forEach(d => addIVRow(d.v, d.i));
+        }
+
+        // --- PART 3: WAVELENGTH ---
+        function addWavelengthRow(lam='', vstop='') {
+            const tbody = document.getElementById('lambda-body');
+            const row = tbody.insertRow();
+            
+            row.insertCell().appendChild(createInput(lam, 'λ (nm)', updateCalculations)).parentNode.setAttribute('data-label', 'λ (nm)');
+            const cFreq = row.insertCell(); cFreq.setAttribute('data-label', 'Freq (10¹⁴ Hz)'); cFreq.className = 'calc-cell'; cFreq.innerText = '--';
+            row.insertCell().appendChild(createInput(vstop, 'Vstop', updateCalculations)).parentNode.setAttribute('data-label', 'Vstop (V)');
+            row.insertCell().appendChild(createDelBtn(row, updateCalculations));
+            updateCalculations();
+        }
+
+        function populateHgLines() {
+            document.getElementById('lambda-body').innerHTML = '';
+            HG_LINES.forEach(l => addWavelengthRow(l, ''));
+        }
+
+        // --- MASTER UPDATE LOGIC ---
+        function updateCalculations() {
+            updatePart1();
+            updatePart2();
+            updatePart3();
+            checkUnsavedState();
+        }
+
+        function updatePart1() {
+            const rows = document.getElementById('iv-body').rows;
+            const pts = [];
+            for(let r of rows) {
+                const inputs = r.querySelectorAll('input');
+                const v = parseFloat(inputs[0].value);
+                const i = parseFloat(inputs[1].value);
+                if(!isNaN(v) && !isNaN(i)) pts.push({x: v, y: i});
+            }
+            
+            // Sort for line charting
+            pts.sort((a,b) => a.x - b.x);
+            drawIVChart(pts);
+        }
+
+        function updatePart2() {
+            const inputs = document.querySelectorAll('.vstop-int');
+            const vals = [];
+            inputs.forEach(i => {
+                const v = parseFloat(i.value);
+                if(!isNaN(v)) vals.push(v);
+            });
+
+            const varBadge = document.getElementById('intensity-variance');
+            if(vals.length > 1) {
+                const max = Math.max(...vals);
+                const min = Math.min(...vals);
+                const diffPct = (max === 0) ? 0 : ((max - min) / max) * 100;
+                
+                varBadge.innerText = `Max Variance: ${diffPct.toFixed(1)}%`;
+                if(diffPct < 5) varBadge.style.color = 'var(--success)';
+                else if (diffPct < 10) varBadge.style.color = 'var(--warning)';
+                else varBadge.style.color = 'var(--error)';
+            } else {
+                varBadge.innerText = '--';
+                varBadge.style.color = 'var(--text-heading)';
+            }
+        }
+
+        function updatePart3() {
+            const rows = document.getElementById('lambda-body').rows;
+            const pts = []; // Array of { f_14Hz, vstop }
+            let traceHtml = '';
+
+            for(let r of rows) {
+                const inputs = r.querySelectorAll('input');
+                const lam_nm = parseFloat(inputs[0].value);
+                const vstop = parseFloat(inputs[1].value);
+                const cFreq = r.cells[1];
+
+                if(!isNaN(lam_nm) && lam_nm > 0) {
+                    const f_hz = C_SPEED / (lam_nm * 1e-9);
+                    const f_14 = f_hz / 1e14;
+                    cFreq.innerText = f_14.toFixed(3);
+                    
+                    if(!isNaN(vstop)) {
+                        pts.push({x: f_14, y: vstop, f_hz: f_hz});
+                    }
+                } else {
+                    cFreq.innerText = '--';
+                }
+            }
+
+            const hOut = document.getElementById('stat-h-joules');
+            const phiOut = document.getElementById('stat-phi');
+            const errOut = document.getElementById('stat-error-h');
+
+            if(pts.length > 1) {
+                // We plot Vstop (y) vs f_14 (x).
+                // Linear Equation: V = (h/e) * f - (Phi/e)
+                // Because x is in 10^14 Hz, slope = (h/e) * 10^14
+                const fit = linearFit(pts.map(p=>p.x), pts.map(p=>p.y));
+                
+                // slope = (h/e) * 1e14
+                // h = (slope / 1e14) * e
+                const slope = fit.slope;
+                const intercept = fit.intercept; // -Phi/e in Volts
+                
+                const h_exp = (slope / 1e14) * E_CHARGE;
+                const phi_exp = -intercept; // in eV since intercept is in Volts
+
+                hOut.innerText = h_exp.toExponential(4);
+                phiOut.innerText = phi_exp.toFixed(2);
+
+                const err = Math.abs((h_exp - ACCEPTED_H) / ACCEPTED_H) * 100;
+                errOut.innerText = err.toFixed(2) + '%';
+                errOut.className = err < 5 ? 'badge badge-good' : (err < 15 ? 'badge badge-warn' : 'badge badge-bad');
+
+                traceHtml = `Linear Regression Details:\n` +
+                            `Slope (m) = &Delta;V / &Delta;f = ${slope.toFixed(4)} V / (10<sup>14</sup> Hz)\n` +
+                            `Y-Intercept (b) = ${intercept.toFixed(4)} V\n\n` +
+                            `<span style="color:var(--text-muted)">1. Planck's Constant (h)</span>\n` +
+                            `m = (h/e) &middot; 10<sup>14</sup> &implies; h = (m / 10<sup>14</sup>) &middot; e\n` +
+                            `h = (${slope.toFixed(4)} / 10<sup>14</sup>) &middot; 1.602&times;10<sup>-19</sup> C\n` +
+                            `h = <span style="color:var(--accent)">${h_exp.toExponential(4)} J&middot;s</span>\n\n` +
+                            `<span style="color:var(--text-muted)">2. Work Function (&Phi;)</span>\n` +
+                            `b = -&Phi;/e &implies; &Phi; = -b (in electron-Volts)\n` +
+                            `&Phi; = <span style="color:var(--primary)">${phi_exp.toFixed(3)} eV</span>`;
+                
+                drawHChart(pts, fit);
+            } else {
+                hOut.innerText = '--'; phiOut.innerText = '--'; errOut.innerText = '--'; errOut.className = 'badge';
+                drawHChart(pts, null);
+                traceHtml = '<span style="color: var(--text-muted);">Enter wavelength and Vstop data for at least 2 points to view derivation...</span>';
+            }
+            
+            document.getElementById('calc-trace').innerHTML = traceHtml;
+        }
+
+        // --- GRAPHING ---
+        function drawIVChart(pts) {
+            const ctx = document.getElementById('ivChart').getContext('2d');
+            const colorGrid = getComputedStyle(document.body).getPropertyValue('--border').trim();
+            const colorPrim = getComputedStyle(document.body).getPropertyValue('--primary').trim();
+
+            if (ivChart) ivChart.destroy();
+            Chart.defaults.color = getComputedStyle(document.body).getPropertyValue('--text-main').trim();
+
+            let datasets = [];
+            if(pts.length > 0) {
+                datasets.push({
+                    label: 'Photocurrent vs Voltage',
+                    data: pts,
+                    type: 'line',
+                    borderColor: colorPrim,
+                    backgroundColor: 'rgba(0, 229, 255, 0.2)',
+                    pointRadius: 5, pointHoverRadius: 8,
+                    fill: false, tension: 0.3
+                });
+            }
+
+            ivChart = new Chart(ctx, {
+                data: { datasets: datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { type: 'linear', title: { display: true, text: 'Voltage (V)' }, grid: { color: colorGrid } },
+                        y: { title: { display: true, text: 'Current (x10⁻¹¹ A)' }, grid: { color: colorGrid } }
+                    }
+                }
+            });
+
+            chartMeta['c1'] = {
+                type: 'line', dataSets: datasets, labels: [],
+                xTitle: 'Voltage (V)', yTitle: 'Photocurrent (x10⁻¹¹ A)',
+                reportTitle: "Experiment 9: I-V Characteristic Curve",
+                getStats: () => []
+            };
+        }
+
+        function drawHChart(pts, fit) {
+            const ctx = document.getElementById('hChart').getContext('2d');
+            const colorGrid = getComputedStyle(document.body).getPropertyValue('--border').trim();
+            const colorAcc = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+
+            if (hChart) hChart.destroy();
+
+            let datasets = [];
+            if(pts.length > 0) {
+                datasets.push({
+                    label: 'V_stop vs Frequency',
+                    data: pts,
+                    type: 'scatter',
+                    backgroundColor: colorAcc,
+                    pointRadius: 6
+                });
+
+                if(fit) {
+                    const xMin = Math.min(0, Math.min(...pts.map(d=>d.x)));
+                    const xMax = Math.max(...pts.map(d=>d.x)) * 1.1;
+                    datasets.push({
+                        label: 'Linear Fit',
+                        data: [{x: xMin, y: fit.intercept}, {x: xMax, y: fit.slope*xMax + fit.intercept}],
+                        type: 'line',
+                        borderColor: colorAcc,
+                        borderDash: [5,5], pointRadius: 0
+                    });
+                }
+            }
+
+            hChart = new Chart(ctx, {
+                data: { datasets: datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: true } },
+                    scales: {
+                        x: { type: 'linear', title: { display: true, text: 'Frequency (x10¹⁴ Hz)' }, grid: { color: colorGrid }, min: 0 },
+                        y: { title: { display: true, text: 'Stopping Voltage (V)' }, grid: { color: colorGrid } }
+                    }
+                }
+            });
+
+            chartMeta['c2'] = {
+                type: 'scatter', dataSets: datasets, labels: [],
+                xTitle: 'Frequency (x10¹⁴ Hz)', yTitle: 'Stopping Voltage (V)',
+                reportTitle: "Experiment 9: Determination of Planck's Constant",
+                getStats: () => [
+                    { label: "Exp Planck's h:", value: document.getElementById('stat-h-joules').innerText + " J·s" },
+                    { label: "Exp Work Function Φ:", value: document.getElementById('stat-phi').innerText + " eV" },
+                    { line: true },
+                    { label: 'Accepted h:', value: '6.626e-34 J·s' },
+                    { label: '% Error (h):', value: document.getElementById('stat-error-h').innerText, isBadge: true }
+                ]
+            };
+        }
+
+        // --- DATA PERSISTENCE & UNSAVED STATE ---
+        function gatherData() {
+            const data = { iv: [], intensity: [], lam: [] };
+            document.querySelectorAll('#iv-body tr').forEach(r => {
+                const i = r.querySelectorAll('input'); data.iv.push({ v: i[0].value, i: i[1].value });
+            });
+            document.querySelectorAll('.vstop-int').forEach(i => data.intensity.push(i.value));
+            document.querySelectorAll('#lambda-body tr').forEach(r => {
+                const i = r.querySelectorAll('input'); data.lam.push({ lam: i[0].value, vstop: i[1].value });
+            });
+            return data;
+        }
+
+        function checkUnsavedState() {
+            const currentStr = JSON.stringify(gatherData());
+            const btn = document.getElementById('btn-export');
+            if (lastSavedState !== null && currentStr !== lastSavedState) {
+                btn.classList.add('btn-unsaved'); btn.innerHTML = '📥 Export Data (Unsaved*)';
+            } else {
+                btn.classList.remove('btn-unsaved'); btn.innerHTML = '📥 Export Data (JSON)';
+            }
+            localStorage.setItem('phys43_lab9_data_autosave', currentStr);
+        }
+
+        function markAsSaved() {
+            lastSavedState = JSON.stringify(gatherData());
+            checkUnsavedState();
+        }
+
+        function loadData(sourceData) {
+            document.getElementById('iv-body').innerHTML = '';
+            document.getElementById('lambda-body').innerHTML = '';
+            const intInputs = document.querySelectorAll('.vstop-int');
+            intInputs.forEach(i => i.value = '');
+
+            if(sourceData) {
+                if(sourceData.iv && sourceData.iv.length) sourceData.iv.forEach(d => addIVRow(d.v, d.i));
+                else populateIVDefaults();
+
+                if(sourceData.intensity && sourceData.intensity.length) {
+                    sourceData.intensity.forEach((val, idx) => { if(intInputs[idx]) intInputs[idx].value = val; });
+                }
+
+                if(sourceData.lam && sourceData.lam.length) sourceData.lam.forEach(d => addWavelengthRow(d.lam, d.vstop));
+                else populateHgLines();
+            } else {
+                populateIVDefaults();
+                populateHgLines();
+            }
+            updateCalculations();
+            markAsSaved(); 
+        }
+
+        // --- EVENT LISTENERS ---
+
+        // 1. Enter Key Flow
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                e.preventDefault(); 
+                const inputs = Array.from(document.querySelectorAll('section input[type="number"]'));
+                const index = inputs.indexOf(e.target);
+                
+                if (index > -1) {
+                    if (index < inputs.length - 1) {
+                        inputs[index + 1].focus(); 
+                    } else {
+                        const tbody = e.target.closest('tbody');
+                        if(tbody) {
+                            if(tbody.id === 'iv-body') addIVRow();
+                            else if(tbody.id === 'lambda-body') addWavelengthRow();
+                            
+                            setTimeout(() => {
+                                const newInputs = Array.from(document.querySelectorAll('section input[type="number"]'));
+                                if(newInputs.length > inputs.length) newInputs[index + 1].focus();
+                            }, 50);
+                        }
+                    }
+                }
+            }
+        });
+
+        // 2. Drag & Drop JSON
+        const dropZone = document.body;
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); document.body.classList.add('drag-active'); });
+        dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); document.body.classList.remove('drag-active'); });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault(); document.body.classList.remove('drag-active');
+            if (e.dataTransfer.files.length) {
+                const file = e.dataTransfer.files[0];
+                if (!file.name.endsWith('.json')) return alert('Please drop a valid JSON file.');
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try { loadData(JSON.parse(ev.target.result)); } 
+                    catch(err) { alert("Invalid JSON file structure."); }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // 3. Toolbar Buttons
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            if(confirm("Clear all data and reset table to default?")) { 
+                localStorage.removeItem('phys43_lab9_data_autosave'); 
+                loadData(null); 
+                lastSavedState = null; checkUnsavedState(); 
+            }
+        });
+
+        document.getElementById('btn-export').addEventListener('click', () => {
+            const dataStr = JSON.stringify(gatherData());
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([dataStr], {type: 'application/json'}));
+            a.download = 'phys43_lab9_photoelectric.json';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            markAsSaved(); 
+        });
+
+        document.getElementById('file-import').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const r = new FileReader();
+            r.onload = (ev) => {
+                try { loadData(JSON.parse(ev.target.result)); } 
+                catch(err) { alert("Invalid JSON file."); }
+                e.target.value = ''; 
+            };
+            r.readAsText(file);
+        });
+
+        // --- HD CHART EXPORTER ---
+        function exportHighResChart(chartKey, filename) {
+            const meta = chartMeta[chartKey];
+            if (!meta) return;
+
+            const chartCanvas = document.createElement('canvas');
+            chartCanvas.width = 1920; chartCanvas.height = 1080;
+            const chartCtx = chartCanvas.getContext('2d');
+
+            const originalColor = Chart.defaults.color;
+            Chart.defaults.color = '#000000'; Chart.defaults.font.size = 24;    
+
+            const tempChart = new Chart(chartCtx, {
+                type: meta.type,
+                data: { labels: meta.labels, datasets: meta.dataSets },
+                options: {
+                    responsive: false, animation: false, devicePixelRatio: 1, 
+                    plugins: { legend: { display: meta.dataSets.length > 1, labels: {color:'#000', font:{size:26}} }, tooltip: { enabled: false } },
+                    scales: {
+                        x: { type: 'linear', title: { display: true, text: meta.xTitle, font: { weight: 'bold', size: 34 }, color: '#000' }, ticks: { color: '#000', font: { size: 24 } }, grid: { color: '#e0e0e0' } },
+                        y: { type: 'linear', title: { display: true, text: meta.yTitle, font: { weight: 'bold', size: 34 }, color: '#000' }, ticks: { color: '#000', font: { size: 24 } }, grid: { color: '#e0e0e0' } }
+                    }
+                },
+                plugins: [{ id: 'bg', beforeDraw: (c) => { c.ctx.save(); c.ctx.fillStyle = '#ffffff'; c.ctx.fillRect(0, 0, c.width, c.height); c.ctx.restore(); } }]
+            });
+
+            const stats = meta.getStats();
+            let statsHeight = stats.reduce((acc, item) => {
+                if (item.line) return acc + 30;
+                if (item.label) return acc + 70;
+                if (item.explain) return acc + (item.explain.split('\n').length * 45) + 30;
+                return acc;
+            }, 0);
+
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = 1920; finalCanvas.height = 1250 + statsHeight + 80; 
+            const ctx = finalCanvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+            ctx.fillStyle = '#000000'; ctx.font = 'bold 52px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText(meta.reportTitle, finalCanvas.width / 2, 80);
+
+            ctx.drawImage(chartCanvas, 0, 120);
+
+            let currentY = 1250;
+            ctx.beginPath(); ctx.moveTo(150, currentY); ctx.lineTo(1770, currentY); ctx.lineWidth = 4; ctx.strokeStyle = '#b056ff'; ctx.stroke();
+            currentY += 70;
+
+            stats.forEach(item => {
+                if (item.line) {
+                    ctx.beginPath(); ctx.moveTo(200, currentY - 25); ctx.lineTo(1720, currentY - 25); ctx.lineWidth = 2; ctx.strokeStyle = '#eeeeee'; ctx.stroke(); currentY += 25;
+                } else if (item.label) {
+                    ctx.textAlign = 'left'; ctx.fillStyle = '#000000'; ctx.font = '38px sans-serif'; ctx.fillText(item.label, 200, currentY);
+                    ctx.textAlign = 'right';
+                    if (item.isBadge) {
+                        ctx.font = 'bold 32px sans-serif'; const w = ctx.measureText(item.value).width;
+                        ctx.fillStyle = '#f5e8ff'; ctx.fillRect(1720 - w - 40, currentY - 40, w + 40, 52);
+                        ctx.fillStyle = '#b056ff'; ctx.fillText(item.value, 1720 - 20, currentY);
+                    } else {
+                        ctx.font = 'bold 42px monospace'; ctx.fillStyle = '#b056ff'; ctx.fillText(item.value, 1720, currentY);
+                    }
+                    currentY += 70;
+                } else if (item.explain) {
+                    ctx.textAlign = 'left'; ctx.fillStyle = '#555555'; ctx.font = 'italic 34px serif'; 
+                    item.explain.split('\n').forEach(l => { ctx.fillText(l.trim(), 200, currentY); currentY += 45; });
+                    currentY += 20;
+                }
+            });
+
+            const link = document.createElement('a');
+            link.download = filename; link.href = finalCanvas.toDataURL('image/png', 1.0); link.click();
+
+            tempChart.destroy();
+            Chart.defaults.color = originalColor;
+        }
+
+        // --- INIT ---
+        window.addEventListener('DOMContentLoaded', () => {
+            const autosaved = localStorage.getItem('phys43_lab9_data_autosave');
+            if (autosaved) {
+                try { loadData(JSON.parse(autosaved)); } 
+                catch(e) { loadData(null); }
+            } else {
+                loadData(null);
+            }
+        });
+    </script>
+</body>
+</html>
