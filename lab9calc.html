@@ -367,7 +367,7 @@
             </div>
             <div class="card-body">
                 <div class="hint-box">
-                    <strong>Bench Setup:</strong> Set aperture to 8 mm. Sweep through the standard mercury vapor spectral lines (wavelengths) using the filter wheel. Record the stopping voltage for each. The slope of V<sub>stop</sub> vs Frequency yields Planck's constant ($h/e$), and the intercept yields the work function.
+                    <strong>Bench Setup:</strong> Set aperture to 8 mm. Sweep through the standard mercury vapor spectral lines (wavelengths) using the filter wheel. Record the stopping voltage for each. The slope of V<sub>stop</sub> vs Frequency yields Planck's constant (h/e), and the intercept yields the work function.
                 </div>
                 
                 <div class="formula-card">
@@ -635,11 +635,11 @@
                             `Slope (m) = &Delta;V / &Delta;f = ${slope.toFixed(4)} V / (10<sup>14</sup> Hz)\n` +
                             `Y-Intercept (b) = ${intercept.toFixed(4)} V\n\n` +
                             `<span style="color:var(--text-muted)">1. Planck's Constant (h)</span>\n` +
-                            `m = (h/e) &middot; 10<sup>14</sup> &implies; h = (m / 10<sup>14</sup>) &middot; e\n` +
+                            `m = (h/e) &middot; 10<sup>14</sup> &rarr; h = (m / 10<sup>14</sup>) &middot; e\n` +
                             `h = (${slope.toFixed(4)} / 10<sup>14</sup>) &middot; 1.602&times;10<sup>-19</sup> C\n` +
                             `h = <span style="color:var(--accent)">${h_exp.toExponential(4)} J&middot;s</span>\n\n` +
                             `<span style="color:var(--text-muted)">2. Work Function (&Phi;)</span>\n` +
-                            `b = -&Phi;/e &implies; &Phi; = -b (in electron-Volts)\n` +
+                            `b = -&Phi;/e &rarr; &Phi; = -b (in electron-Volts)\n` +
                             `&Phi; = <span style="color:var(--primary)">${phi_exp.toFixed(3)} eV</span>`;
                 
                 drawHChart(pts, fit);
