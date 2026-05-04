@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHYS 43 Lab 10: Atomic Spectra</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* Theme: Atomic Spectra / Deep Cosmos */
+            --primary: #00e5ff;      
+            --primary-dark: #00b3cc;
+            --primary-light: #161b22;
+            --accent: #b056ff;       
+            --accent-light: #d6a1ff;
+            --accent-green: #3fb950; 
+            
+            /* Spectral Colors */
+            --spec-red: #ff4d4d;
+            --spec-yellow: #ffda47;
+            --spec-green: #3fb950;
+            --spec-cyan: #00e5ff;
+            --spec-blue: #58a6ff;
+            --spec-violet: #b056ff;
+            
+            --bg-body: #0a0c10;
+            --bg-card: #1c2128;
+            --bg-table: #12161d;
+            --text-main: #c9d1d9;
+            --text-heading: #f0f6fc;
+            --text-muted: #8b949e;
+            --border: #30363d;
+            --input-bg: #010409;
+            
+            --success: #3fb950;
+            --warning: #d29922;
+            --error: #f85149;
+            
+            --radius: 12px;
+            --shadow: 0 8px 24px rgba(0,0,0,0.5);
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 4rem;
+            overflow-x: hidden;
+        }
+
+        /* --- Drag & Drop Overlay --- */
+        #drop-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 229, 255, 0.15);
+            backdrop-filter: blur(4px);
+            border: 4px dashed var(--primary);
+            z-index: 9999; display: none;
+            justify-content: center; align-items: center;
+            font-size: 2rem; color: var(--primary); font-weight: bold;
+            pointer-events: none;
+        }
+        body.drag-active #drop-overlay { display: flex; }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 1rem; display: grid; gap: 2rem; }
+
+        /* --- Header --- */
+        header {
+            background: var(--bg-card);
+            border-bottom: 4px solid var(--primary);
+            padding: 2rem 1rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+        header h1 { color: var(--text-heading); margin-bottom: 0.5rem; letter-spacing: 1px; }
+        header .meta { color: var(--text-muted); font-size: 0.95rem; max-width: 700px; margin: 0 auto 1.5rem auto; }
+
+        /* --- Sections & Cards --- */
+        section {
+            background: var(--bg-card); border-radius: var(--radius);
+            box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden;
+            width: 100%;
+        }
+        .section-header {
+            background: var(--primary-light); padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid var(--border); border-left: 5px solid var(--primary);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .section-header h2 { font-size: 1.3rem; color: var(--text-heading); text-transform: uppercase; margin: 0; }
+        .card-body { padding: 1.5rem; }
+
+        /* --- Instructional Hints --- */
+        .hint-box {
+            background: rgba(0, 229, 255, 0.05); border-left: 3px solid var(--primary);
+            padding: 1rem; margin-bottom: 1.5rem; font-size: 0.95rem; color: var(--text-muted);
+            border-radius: 0 var(--radius) var(--radius) 0;
+        }
+        .hint-box strong { color: var(--text-heading); }
+
+        /* --- Formula Blocks --- */
+        .formula-card {
+            background: var(--primary-light); border: 1px dashed var(--border);
+            padding: 1rem; border-radius: var(--radius); margin-bottom: 1.5rem;
+            display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-around;
+        }
+        .math-display { font-family: var(--font-mono); font-size: 1.15rem; text-align: center; color: var(--primary); }
+        .math-display.accent { color: var(--accent); }
+        .math-display.green { color: var(--accent-green); }
+        .var-def { font-size: 0.8rem; color: var(--text-muted); display: block; text-align: center; margin-top: 0.4rem; text-transform: uppercase; letter-spacing: 0.5px;}
+
+        /* --- Trace Box --- */
+        .trace-box {
+            background: var(--input-bg); border: 1px solid var(--border); border-left: 4px solid var(--accent);
+            padding: 1rem; border-radius: var(--radius); font-family: var(--font-mono);
+            font-size: 0.9rem; color: var(--text-main); margin-top: 1rem; white-space: pre-wrap; line-height: 1.6;
+            overflow-x: auto; word-wrap: break-word;
+        }
+
+        /* --- Layouts --- */
+        .grid-layout { 
+            display: grid; 
+            grid-template-columns: 2fr 1fr; 
+            gap: 2rem; 
+            width: 100%;
+        }
+        .grid-layout > div { min-width: 0; }
+
+        /* --- Mobile-Optimized Tables --- */
+        .table-container {
+            overflow-x: auto; border: 1px solid var(--border);
+            border-radius: var(--radius); margin-bottom: 1rem; background: var(--bg-table);
+            width: 100%; max-width: 100%;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        th { background: rgba(0, 0, 0, 0.3); color: var(--text-main); text-align: center; padding: 0.85rem; font-weight: 600; white-space: nowrap; border-bottom: 2px solid var(--border); }
+        td { padding: 0.5rem; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; }
+        .calc-cell { color: var(--primary); font-weight: bold; font-family: var(--font-mono); }
+        .calc-cell-accent { color: var(--accent); font-weight: bold; font-family: var(--font-mono); }
+
+        /* Mobile Table Transformation */
+        @media (max-width: 1050px) {
+            .grid-layout { grid-template-columns: 1fr; }
+            .card-body { padding: 1rem; }
+            
+            table, thead, tbody, th, td, tr { display: block; width: 100%; }
+            thead tr { position: absolute; top: -9999px; left: -9999px; }
+            tr { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem; background: var(--bg-card); overflow: hidden; }
+            td { 
+                border: none; border-bottom: 1px solid var(--border); position: relative; 
+                padding: 0.75rem 1rem 0.75rem 45%; text-align: right; 
+                display: flex; justify-content: flex-end; align-items: center; min-height: 50px;
+            }
+            td:before { 
+                content: attr(data-label); position: absolute; left: 1rem; width: 40%; 
+                white-space: nowrap; font-weight: bold; color: var(--text-muted); 
+                text-align: left; top: 50%; transform: translateY(-50%); 
+            }
+            td:last-child { border-bottom: 0; padding: 1rem; justify-content: center; }
+            td:last-child:before { display: none; }
+            input[type="number"], input[type="text"], select { width: 100%; max-width: 160px; text-align: right; }
+            .btn-danger { width: 100%; padding: 0.8rem; font-size: 0.9rem;}
+        }
+
+        /* --- Inputs --- */
+        input[type="number"], input[type="text"], select {
+            width: 100%; min-width: 60px; padding: 0.6rem; border: 1px solid var(--border);
+            border-radius: 6px; background: var(--input-bg); color: var(--text-heading);
+            font-family: var(--font-mono); text-align: center; transition: all 0.2s;
+        }
+        input[type="number"]:focus, input[type="text"]:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.2); }
+
+        .global-input-group {
+            display: flex; align-items: center; gap: 1rem; background: var(--bg-table);
+            padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border);
+            margin-bottom: 1.5rem; justify-content: center; flex-wrap: wrap;
+        }
+        .global-input-group label { font-weight: bold; color: var(--text-heading); font-size: 1rem; }
+        .global-input-group input { max-width: 150px; font-size: 1.1rem; border-color: var(--border); }
+
+        /* --- Buttons & Toolbar --- */
+        .btn-toolbar { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center;}
+        .btn-toolbar.center { justify-content: center; }
+        .btn-toolbar.right { justify-content: flex-end; }
+        
+        .btn {
+            border: 1px solid transparent; padding: 0.6rem 1.2rem; border-radius: 6px; cursor: pointer;
+            font-size: 0.85rem; font-weight: 600; transition: all 0.2s; display: inline-flex;
+            align-items: center; justify-content: center; text-transform: uppercase; letter-spacing: 0.5px;
+            min-height: 44px;
+        }
+        .btn-primary { background: var(--primary); color: #000; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-accent { background: var(--accent); color: #fff; }
+        .btn-accent:hover { background: #9d3bf0; }
+        .btn-outline { background: transparent; border-color: var(--border); color: var(--text-main); }
+        .btn-outline:hover { background: var(--border); color: #fff; }
+        .btn-danger { background: rgba(248, 81, 73, 0.1); color: var(--error); }
+        .btn-danger:hover { background: rgba(248, 81, 73, 0.2); }
+        .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.75rem; min-height: 36px; }
+
+        /* Unsaved Changes Indicator */
+        .btn-unsaved {
+            border-color: var(--warning); color: var(--warning);
+            box-shadow: 0 0 8px rgba(210, 153, 34, 0.3);
+            animation: pulse-warn 2s infinite;
+        }
+        @keyframes pulse-warn {
+            0% { box-shadow: 0 0 0 0 rgba(210, 153, 34, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(210, 153, 34, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(210, 153, 34, 0); }
+        }
+
+        /* --- Analysis & Stats --- */
+        .analysis-box {
+            background: var(--primary-light); padding: 1.5rem; border-radius: var(--radius);
+            border: 1px solid var(--border); display: flex; flex-direction: column; width: 100%; height: 100%;
+        }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card {
+            background: var(--bg-card); padding: 1.2rem 1rem; border-radius: var(--radius);
+            text-align: center; border: 1px solid var(--border); box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .stat-card span { display: block; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;}
+        .stat-card strong { font-size: 1.4rem; color: var(--text-heading); font-family: var(--font-mono); margin-top: 0.4rem; display: block;}
+        .stat-card .primary-val { color: var(--primary); }
+        .stat-card .accent-val { color: var(--accent-light); }
+
+        /* --- Badges --- */
+        .badge { 
+            display: inline-block; padding: 0.3rem 0.8rem; border-radius: 12px; 
+            font-size: 0.85rem; font-weight: bold; font-family: var(--font-mono);
+            white-space: nowrap; 
+        }
+        .badge-good { background: rgba(63, 185, 80, 0.15); color: var(--success); border: 1px solid rgba(63, 185, 80, 0.3); }
+        .badge-warn { background: rgba(210, 153, 34, 0.15); color: var(--warning); border: 1px solid rgba(210, 153, 34, 0.3); }
+        .badge-bad { background: rgba(248, 81, 73, 0.15); color: var(--error); border: 1px solid rgba(248, 81, 73, 0.3); }
+
+        /* --- Charts --- */
+        .chart-wrapper {
+            position: relative; height: 350px; width: 100%; background: var(--bg-card);
+            border-radius: var(--radius); padding: 0.5rem; border: 1px solid var(--border);
+            margin-top: 1rem; flex-grow: 1;
+        }
+
+        /* --- Utilities --- */
+        .flex-between { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 0; border-top: 1px solid var(--border); }
+        .mt-1 { margin-top: 1rem; } .mb-1 { margin-bottom: 1rem; }
+        footer { text-align: center; margin-top: 3rem; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 1.5rem; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    </style>
+</head>
+<body>
+
+    <div id="drop-overlay">Drop JSON File Here to Load</div>
+
+    <header>
+        <h1>Experiment 10: Atomic Spectra</h1>
+        <p class="meta">
+            Process spectrophotometer measurements to calibrate a diffraction grating using Helium, and determine the Rydberg constant from the Hydrogen Balmer series.
+        </p>
+        <div class="btn-toolbar center">
+             <button id="btn-export" class="btn btn-outline" aria-live="polite">📥 Export Data (JSON)</button>
+             <label class="btn btn-outline">
+                📤 Load Data
+                <input type="file" id="file-import" accept=".json" class="sr-only">
+             </label>
+             <button id="btn-reset" class="btn btn-danger">✖ Reset All</button>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <section id="part1">
+            <div class="section-header">
+                <h2>1. Spectrometer Calibration (Helium)</h2>
+                <span class="badge badge-good">d sin(&theta;) = m&lambda;</span>
+            </div>
+            <div class="card-body">
+                <div class="hint-box">
+                    <strong>Bench Setup:</strong> Using the Helium gas tube, align the central maximum (0&deg;) and slowly scan the sensor to measure the angle &theta; for the known distinct spectral lines. Use these angles to calculate the physical slit spacing (d) of your specific diffraction grating.
+                </div>
+
+                <div class="formula-card">
+                    <div>
+                        <div class="math-display">d = (m &middot; &lambda;) / sin(&theta;)</div>
+                        <span class="var-def">Grating Spacing</span>
+                    </div>
+                </div>
+
+                <div class="global-input-group">
+                    <label>Diffraction Grating Rating:</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <input type="number" id="grating-lines" value="600" step="any" oninput="updateCalculations()">
+                        <span style="color: var(--text-muted);">lines/mm</span>
+                    </div>
+                    <div style="margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--border);">
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Expected d:</span>
+                        <strong id="expected-d" style="font-family: var(--font-mono); color: var(--primary); margin-left: 0.5rem; font-size: 1.2rem;">1666.67 nm</strong>
+                    </div>
+                </div>
+
+                <div class="grid-layout">
+                    <div>
+                        <div class="btn-toolbar mb-1">
+                            <button class="btn btn-primary btn-sm" onclick="addHeRow()">+ Add He Line</button>
+                            <button class="btn btn-outline btn-sm" onclick="populateHeDefaults()">Load Standard He Lines</button>
+                        </div>
+                        <div class="table-container">
+                            <table id="he-table">
+                                <thead>
+                                    <tr>
+                                        <th>Color</th>
+                                        <th>Known &lambda; (nm)</th>
+                                        <th>Order (m)</th>
+                                        <th>Angle &theta; (&deg;)</th>
+                                        <th>Calc d (nm)</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="he-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="analysis-box">
+                        <h3 style="color: var(--text-heading); margin-bottom: 0.5rem; font-size: 1.1rem; text-align: center; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">Calibration Results</h3>
+                        
+                        <div style="background: var(--bg-card); padding: 1.5rem; border-radius: var(--radius); text-align: center; border: 1px solid var(--border); margin-top: 1rem; flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
+                            <span class="var-def" style="margin-top: 0; font-size: 0.9rem;">Average Measured Spacing (d<sub>avg</sub>)</span>
+                            <strong id="stat-d-avg" style="font-size: 2.5rem; font-family: var(--font-mono); color: var(--primary); margin: 0.5rem 0;">--</strong>
+                            
+                            <div class="flex-between" style="margin-top: 1rem;">
+                                <span style="font-size: 0.9rem; color: var(--text-muted);">Error vs Expected:</span>
+                                <span id="stat-d-error" class="badge">--</span>
+                            </div>
+                        </div>
+
+                        <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-top: 1rem; font-style: italic;">
+                            This calculated d<sub>avg</sub> will be automatically used to determine the wavelengths of the Hydrogen Balmer series below.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part2">
+            <div class="section-header">
+                <h2 style="color: var(--accent);">2. Hydrogen Balmer Series</h2>
+                <span class="badge badge-warn">1/&lambda; = R<sub>H</sub> (1/2&sup2; - 1/n&sup2;)</span>
+            </div>
+            <div class="card-body">
+                <div class="hint-box" style="border-left-color: var(--accent); background: rgba(176, 86, 255, 0.05);">
+                    <strong style="color: var(--accent);">Bench Setup:</strong> Replace the Helium tube with the Hydrogen tube. CAUTION: HOT. Scan the sensor from the central maximum to measure the angles of the visible Hydrogen lines. The Balmer series corresponds to electron transitions falling to the final state n<sub>f</sub> = 2.
+                </div>
+                
+                <div class="formula-card">
+                    <div>
+                        <div class="math-display">&lambda; = (d<sub>avg</sub> &middot; sin(&theta;)) / m</div>
+                        <span class="var-def">Experimental Wavelength</span>
+                    </div>
+                    <div>
+                        <div class="math-display accent">1/&lambda; = -R<sub>H</sub>(1/n&sup2;) + R<sub>H</sub>/4</div>
+                        <span class="var-def">Linear Plot (y = mx + b)</span>
+                    </div>
+                </div>
+
+                <div class="grid-layout">
+                    <div>
+                        <div class="btn-toolbar mb-1">
+                            <button class="btn btn-accent btn-sm" onclick="addHRow()">+ Add H Line</button>
+                            <button class="btn btn-outline btn-sm" onclick="populateHDefaults()">Load Balmer Transitions</button>
+                        </div>
+                        <div class="table-container">
+                            <table id="h-table">
+                                <thead>
+                                    <tr>
+                                        <th>Color</th>
+                                        <th>n<sub>i</sub></th>
+                                        <th>Order (m)</th>
+                                        <th>Angle &theta; (&deg;)</th>
+                                        <th>&lambda; (nm)</th>
+                                        <th>1/&lambda; (m⁻¹)</th>
+                                        <th>1/n&sup2;</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="h-body"></tbody>
+                            </table>
+                        </div>
+                        <div class="trace-box" id="calc-trace"><span style="color: var(--text-muted);">Live Calculation Trace (Enter data to see derivation)...</span></div>
+                    </div>
+
+                    <div class="analysis-box">
+                        <h3 style="color: var(--text-heading); margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; font-size: 1.1rem;">Rydberg Analysis</h3>
+                        
+                        <div class="stat-grid">
+                            <div class="stat-card" style="border-top: 3px solid var(--accent);">
+                                <span>R<sub>H</sub> from Slope</span>
+                                <strong id="stat-rh-slope" class="accent-val" style="font-size: 1.2rem;">--</strong>
+                            </div>
+                            <div class="stat-card" style="border-top: 3px solid var(--primary);">
+                                <span>R<sub>H</sub> from Intercept</span>
+                                <strong id="stat-rh-int" class="primary-val" style="font-size: 1.2rem;">--</strong>
+                            </div>
+                        </div>
+
+                        <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1rem; text-align: center;">
+                            <span class="var-def" style="margin-top: 0; font-size: 0.8rem;">Average Experimental R<sub>H</sub> (m⁻¹)</span>
+                            <strong id="stat-rh-avg" style="font-size: 1.6rem; font-family: var(--font-mono); color: var(--text-heading); margin-top: 0.25rem; display: block;">--</strong>
+                        </div>
+
+                        <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1rem;">
+                            <div class="flex-between" style="border: none; padding-top: 0;">
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">Accepted R<sub>H</sub>:</span>
+                                <strong style="font-family: var(--font-mono); color: var(--text-heading);">1.097e+7 m⁻¹</strong>
+                            </div>
+                            <div class="flex-between" style="padding-bottom: 0;">
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">% Error:</span>
+                                <span id="stat-error-rh" class="badge">--</span>
+                            </div>
+                        </div>
+
+                        <div class="chart-wrapper">
+                            <canvas id="balmerChart"></canvas>
+                        </div>
+                        <div class="btn-toolbar right mt-1">
+                            <button class="btn btn-outline btn-sm" onclick="exportHighResChart('c1', 'Balmer_Series_Rydberg_Graph.png')">📸 Export Graph</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="part3">
+            <div class="section-header">
+                <h2 style="color: var(--accent-green);">3. Capstone Spectrometer Utility</h2>
+                <span class="badge badge-good">Optional Tracker</span>
+            </div>
+            <div class="card-body">
+                <div class="hint-box" style="border-left-color: var(--accent-green); background: rgba(63, 185, 80, 0.05);">
+                    <strong style="color: var(--accent-green);">Software Setup:</strong> If scanning a tube with Pasco Capstone to generate an Intensity vs Wavelength plot, you can use this table to convert your measured sensor angles directly into wavelengths using the d<sub>avg</sub> established in Section 1. Assuming m=1.
+                </div>
+                
+                <div class="table-container" style="max-width: 800px; margin: 0 auto;">
+                    <table id="spec-table">
+                        <thead>
+                            <tr>
+                                <th>Peak Identity / Color</th>
+                                <th>Measured Angle &theta; (&deg;)</th>
+                                <th>Calc Wavelength &lambda; (nm)</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="spec-body"></tbody>
+                    </table>
+                    <div class="btn-toolbar center" style="padding: 1rem;">
+                        <button class="btn btn-outline btn-sm" onclick="addSpecRow()">+ Add Software Peak</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <footer>
+        PHYS 43 Lab Companion | Computations execute locally in your browser.
+    </footer>
+
+    <script>
+        // --- GLOBAL STATE & CONSTANTS ---
+        const ACCEPTED_RH = 1.097e7; // m^-1
+        
+        let balmerChart = null;
+        let chartMeta = { c1: null };
+        let lastSavedState = null;
+        let currentDavg = null; // nm
+
+        // Standard lines for auto-population
+        const HE_DEFAULTS = [
+            { c: 'Red', l: 667.8, hex: '#ff4d4d' },
+            { c: 'Yellow', l: 587.6, hex: '#ffda47' },
+            { c: 'Green', l: 501.6, hex: '#3fb950' },
+            { c: 'Cyan', l: 492.2, hex: '#00e5ff' },
+            { c: 'Blue', l: 471.3, hex: '#58a6ff' },
+            { c: 'Violet', l: 447.1, hex: '#b056ff' }
+        ];
+
+        const H_DEFAULTS = [
+            { c: 'Red', n: 3, hex: '#ff4d4d' },
+            { c: 'Cyan', n: 4, hex: '#00e5ff' },
+            { c: 'Violet', n: 5, hex: '#b056ff' },
+            { c: 'Deep Violet', n: 6, hex: '#8a2be2' }
+        ];
+
+        // --- MATH UTILS ---
+        function deg2rad(deg) { return deg * Math.PI / 180; }
+        
+        function linearFit(x, y) {
+            const n = x.length;
+            if (n < 2) return null;
+            let sumX=0, sumY=0, sumXY=0, sumXX=0;
+            for(let i=0; i<n; i++) {
+                sumX += x[i]; sumY += y[i];
+                sumXY += x[i]*y[i]; sumXX += x[i]*x[i];
+            }
+            const slope = (n*sumXY - sumX*sumY) / (n*sumXX - sumX*sumX);
+            const intercept = (sumY - slope*sumX) / n;
+            const yMean = sumY / n;
+            let ssTot=0, ssRes=0;
+            for(let i=0; i<n; i++) {
+                ssTot += Math.pow(y[i] - yMean, 2);
+                ssRes += Math.pow(y[i] - (slope*x[i] + intercept), 2);
+            }
+            return { slope, intercept, r2: 1 - (ssRes/ssTot) };
+        }
+
+        // --- UI & TABLE LOGIC ---
+        function createInput(val, type='number', placeholder='', oninputFn) {
+            const input = document.createElement('input');
+            input.type = type; 
+            if(type === 'number') input.step = 'any'; 
+            input.value = val;
+            input.placeholder = placeholder; input.oninput = oninputFn;
+            return input;
+        }
+
+        function createDelBtn(row, updateFn) {
+            const btn = document.createElement('button');
+            btn.innerHTML = 'Remove'; btn.className = 'btn btn-danger btn-sm';
+            btn.onclick = () => { row.remove(); updateFn(); };
+            return btn;
+        }
+
+        function getColorStyle(colorName) {
+            const map = {
+                'red': 'var(--spec-red)', 'yellow': 'var(--spec-yellow)', 
+                'green': 'var(--spec-green)', 'cyan': 'var(--spec-cyan)', 'blue-green': 'var(--spec-cyan)',
+                'blue': 'var(--spec-blue)', 'violet': 'var(--spec-violet)', 'deep violet': '#8a2be2'
+            };
+            return map[colorName.toLowerCase()] || 'var(--text-main)';
+        }
+
+        // --- PART 1: HELIUM CALIBRATION ---
+        function addHeRow(color='', lam='', m='1', theta='') {
+            const tbody = document.getElementById('he-body');
+            const row = tbody.insertRow();
+            
+            const colorInput = createInput(color, 'text', 'Color', updateCalculations);
+            colorInput.style.color = getColorStyle(color);
+            colorInput.onchange = (e) => { e.target.style.color = getColorStyle(e.target.value); updateCalculations(); };
+            
+            row.insertCell().appendChild(colorInput).parentNode.setAttribute('data-label', 'Color');
+            row.insertCell().appendChild(createInput(lam, 'number', 'λ (nm)', updateCalculations)).parentNode.setAttribute('data-label', 'Known λ (nm)');
+            row.insertCell().appendChild(createInput(m, 'number', 'm', updateCalculations)).parentNode.setAttribute('data-label', 'Order (m)');
+            row.insertCell().appendChild(createInput(theta, 'number', 'θ (°)', updateCalculations)).parentNode.setAttribute('data-label', 'Angle θ (°)');
+            
+            const cellCalc = row.insertCell(); cellCalc.setAttribute('data-label', 'Calc d (nm)'); cellCalc.className = 'calc-cell'; cellCalc.innerText = '--';
+            row.insertCell().appendChild(createDelBtn(row, updateCalculations));
+            
+            updateCalculations();
+        }
+
+        function populateHeDefaults() {
+            document.getElementById('he-body').innerHTML = '';
+            HE_DEFAULTS.forEach(d => addHeRow(d.c, d.l, '1', ''));
+        }
+
+        // --- PART 2: HYDROGEN BALMER ---
+        function addHRow(color='', n='', m='1', theta='') {
+            const tbody = document.getElementById('h-body');
+            const row = tbody.insertRow();
+            
+            const colorInput = createInput(color, 'text', 'Color', updateCalculations);
+            colorInput.style.color = getColorStyle(color);
+            colorInput.onchange = (e) => { e.target.style.color = getColorStyle(e.target.value); updateCalculations(); };
+            
+            row.insertCell().appendChild(colorInput).parentNode.setAttribute('data-label', 'Color');
+            row.insertCell().appendChild(createInput(n, 'number', 'n', updateCalculations)).parentNode.setAttribute('data-label', 'n_i');
+            row.insertCell().appendChild(createInput(m, 'number', 'm', updateCalculations)).parentNode.setAttribute('data-label', 'Order (m)');
+            row.insertCell().appendChild(createInput(theta, 'number', 'θ (°)', updateCalculations)).parentNode.setAttribute('data-label', 'Angle θ (°)');
+            
+            const cellLam = row.insertCell(); cellLam.setAttribute('data-label', 'λ (nm)'); cellLam.className = 'calc-cell'; cellLam.innerText = '--';
+            const cellInvLam = row.insertCell(); cellInvLam.setAttribute('data-label', '1/λ (m⁻¹)'); cellInvLam.innerText = '--';
+            const cellInvN2 = row.insertCell(); cellInvN2.setAttribute('data-label', '1/n²'); cellInvN2.innerText = '--';
+            
+            row.insertCell().appendChild(createDelBtn(row, updateCalculations));
+            updateCalculations();
+        }
+
+        function populateHDefaults() {
+            document.getElementById('h-body').innerHTML = '';
+            H_DEFAULTS.forEach(d => addHRow(d.c, d.n, '1', ''));
+        }
+
+        // --- PART 3: SPECTROMETER ---
+        function addSpecRow(id='', theta='') {
+            const tbody = document.getElementById('spec-body');
+            const row = tbody.insertRow();
+            
+            row.insertCell().appendChild(createInput(id, 'text', 'Peak Label', updateCalculations)).parentNode.setAttribute('data-label', 'Peak Identity');
+            row.insertCell().appendChild(createInput(theta, 'number', 'θ (°)', updateCalculations)).parentNode.setAttribute('data-label', 'Angle θ (°)');
+            const cellLam = row.insertCell(); cellLam.setAttribute('data-label', 'λ (nm)'); cellLam.className = 'calc-cell-accent'; cellLam.style.color = 'var(--accent-green)'; cellLam.innerText = '--';
+            row.insertCell().appendChild(createDelBtn(row, updateCalculations));
+            
+            updateCalculations();
+        }
+
+        // --- MASTER UPDATE LOGIC ---
+        function updateCalculations() {
+            updateHelium();
+            updateHydrogen();
+            updateSpectrometer();
+            checkUnsavedState();
+        }
+
+        function updateHelium() {
+            const linesPerMm = parseFloat(document.getElementById('grating-lines').value);
+            const expectedD = isNaN(linesPerMm) || linesPerMm === 0 ? 0 : (1 / linesPerMm) * 1e6; // nm
+            document.getElementById('expected-d').innerText = expectedD ? expectedD.toFixed(2) + ' nm' : '--';
+
+            const rows = document.getElementById('he-body').rows;
+            let sumD = 0;
+            let validCount = 0;
+
+            for(let r of rows) {
+                const inputs = r.querySelectorAll('input');
+                const lam = parseFloat(inputs[1].value);
+                const m = parseFloat(inputs[2].value);
+                const theta = parseFloat(inputs[3].value);
+                const calcCell = r.cells[4];
+
+                if(!isNaN(lam) && !isNaN(m) && !isNaN(theta) && theta > 0) {
+                    const d = (m * lam) / Math.sin(deg2rad(theta));
+                    calcCell.innerText = d.toFixed(2);
+                    sumD += d;
+                    validCount++;
+                } else {
+                    calcCell.innerText = '--';
+                }
+            }
+
+            const dAvgOut = document.getElementById('stat-d-avg');
+            const dErrOut = document.getElementById('stat-d-error');
+
+            if(validCount > 0) {
+                currentDavg = sumD / validCount;
+                dAvgOut.innerText = currentDavg.toFixed(2) + ' nm';
+                
+                if(expectedD > 0) {
+                    const err = Math.abs((currentDavg - expectedD) / expectedD) * 100;
+                    dErrOut.innerText = err.toFixed(2) + '%';
+                    dErrOut.className = err < 5 ? 'badge badge-good' : (err < 10 ? 'badge badge-warn' : 'badge badge-bad');
+                } else {
+                    dErrOut.innerText = '--'; dErrOut.className = 'badge';
+                }
+            } else {
+                currentDavg = null;
+                dAvgOut.innerText = '--';
+                dErrOut.innerText = '--'; dErrOut.className = 'badge';
+            }
+        }
+
+        function updateHydrogen() {
+            const rows = document.getElementById('h-body').rows;
+            const pts = [];
+            let traceHtml = '';
+
+            for(let i=0; i<rows.length; i++) {
+                const r = rows[i];
+                const inputs = r.querySelectorAll('input');
+                const n = parseFloat(inputs[1].value);
+                const m = parseFloat(inputs[2].value);
+                const theta = parseFloat(inputs[3].value);
+                
+                const cLam = r.cells[4];
+                const cInvLam = r.cells[5];
+                const cInvN2 = r.cells[6];
+
+                if(!isNaN(n) && n > 2) {
+                    const invN2 = 1 / (n * n);
+                    cInvN2.innerText = invN2.toFixed(4);
+
+                    if(!isNaN(m) && !isNaN(theta) && theta > 0 && currentDavg !== null) {
+                        const lam_nm = (currentDavg * Math.sin(deg2rad(theta))) / m;
+                        cLam.innerText = lam_nm.toFixed(2);
+                        
+                        const lam_m = lam_nm * 1e-9;
+                        const invLam = 1 / lam_m; // m^-1
+                        cInvLam.innerText = invLam.toExponential(4);
+
+                        pts.push({ x: invN2, y: invLam, n: n });
+
+                        // Update trace with the latest valid row
+                        traceHtml = `Row ${i+1} Trace (n=${n}):\n` +
+                                    `<span style="color:var(--text-muted)">1. Wavelength</span>\n` +
+                                    `&lambda; = (d<sub>avg</sub> &middot; sin(&theta;)) / m\n` +
+                                    `&lambda; = (${currentDavg.toFixed(2)} &middot; sin(${theta}&deg;)) / ${m} = <span style="color:var(--primary)">${lam_nm.toFixed(2)} nm</span>\n\n` +
+                                    `<span style="color:var(--text-muted)">2. Equation Components</span>\n` +
+                                    `1/&lambda; = 1 / (${lam_nm.toFixed(2)}&times;10<sup>-9</sup> m) = <span style="color:var(--accent)">${invLam.toExponential(4)} m<sup>-1</sup></span>\n` +
+                                    `1/n&sup2; = 1 / ${n}&sup2; = ${invN2.toFixed(4)}`;
+
+                    } else {
+                        cLam.innerText = '--'; cInvLam.innerText = '--';
+                    }
+                } else {
+                    cInvN2.innerText = '--'; cLam.innerText = '--'; cInvLam.innerText = '--';
+                }
+            }
+
+            const outSlope = document.getElementById('stat-rh-slope');
+            const outInt = document.getElementById('stat-rh-int');
+            const outAvg = document.getElementById('stat-rh-avg');
+            const outErr = document.getElementById('stat-error-rh');
+
+            if(pts.length > 1) {
+                // Fit: y = 1/lambda, x = 1/n^2
+                // Theory: y = -RH * x + RH/4
+                const fit = linearFit(pts.map(p=>p.x), pts.map(p=>p.y));
+                
+                const rh_slope = -fit.slope;
+                const rh_int = fit.intercept * 4;
+                const rh_avg = (rh_slope + rh_int) / 2;
+
+                outSlope.innerText = rh_slope.toExponential(4);
+                outInt.innerText = rh_int.toExponential(4);
+                outAvg.innerText = rh_avg.toExponential(4);
+
+                const err = Math.abs((rh_avg - ACCEPTED_RH) / ACCEPTED_RH) * 100;
+                outErr.innerText = err.toFixed(2) + '%';
+                outErr.className = err < 5 ? 'badge badge-good' : (err < 15 ? 'badge badge-warn' : 'badge badge-bad');
+
+                traceHtml += `\n\n<span style="color:var(--text-muted)">3. Rydberg Regression</span>\n` +
+                             `Slope (m<sub>fit</sub>) = ${fit.slope.toExponential(4)} m<sup>-1</sup>\n` +
+                             `Y-Int (b<sub>fit</sub>) = ${fit.intercept.toExponential(4)} m<sup>-1</sup>\n\n` +
+                             `R<sub>H</sub> (from slope) = -m<sub>fit</sub> = <span style="color:var(--accent)">${rh_slope.toExponential(4)} m<sup>-1</sup></span>\n` +
+                             `R<sub>H</sub> (from int) = 4 &middot; b<sub>fit</sub> = <span style="color:var(--primary)">${rh_int.toExponential(4)} m<sup>-1</sup></span>`;
+
+                drawBalmerChart(pts, fit);
+            } else {
+                outSlope.innerText = '--'; outInt.innerText = '--'; outAvg.innerText = '--'; outErr.innerText = '--'; outErr.className = 'badge';
+                drawBalmerChart(pts, null);
+                if(currentDavg === null) traceHtml = '<span style="color: var(--error);">Error: Helium Calibration d<sub>avg</sub> is required first.</span>';
+                else if(!traceHtml) traceHtml = '<span style="color: var(--text-muted);">Enter Hydrogen measurement data for at least 2 points to view derivation...</span>';
+            }
+
+            document.getElementById('calc-trace').innerHTML = traceHtml;
+        }
+
+        function updateSpectrometer() {
+            const rows = document.getElementById('spec-body').rows;
+            for(let r of rows) {
+                const inputs = r.querySelectorAll('input');
+                const theta = parseFloat(inputs[1].value);
+                const cLam = r.cells[2];
+
+                if(!isNaN(theta) && theta > 0 && currentDavg !== null) {
+                    // Assuming m=1 per the manual hint
+                    const lam_nm = currentDavg * Math.sin(deg2rad(theta));
+                    cLam.innerText = lam_nm.toFixed(2);
+                } else {
+                    cLam.innerText = '--';
+                }
+            }
+        }
+
+        // --- GRAPHING ---
+        function drawBalmerChart(pts, fit) {
+            const ctx = document.getElementById('balmerChart').getContext('2d');
+            const colorGrid = getComputedStyle(document.body).getPropertyValue('--border').trim();
+            const colorAcc = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+
+            if (balmerChart) balmerChart.destroy();
+            Chart.defaults.color = getComputedStyle(document.body).getPropertyValue('--text-main').trim();
+
+            let datasets = [];
+            if(pts.length > 0) {
+                datasets.push({
+                    label: '1/λ vs 1/n²',
+                    data: pts,
+                    type: 'scatter',
+                    backgroundColor: colorAcc,
+                    pointRadius: 6, pointHoverRadius: 8
+                });
+
+                if(fit) {
+                    const xMin = 0; // Show intercept at 0
+                    const xMax = Math.max(...pts.map(d=>d.x)) * 1.2;
+                    datasets.push({
+                        label: 'Linear Fit',
+                        data: [{x: xMin, y: fit.intercept}, {x: xMax, y: fit.slope*xMax + fit.intercept}],
+                        type: 'line',
+                        borderColor: colorAcc,
+                        borderDash: [5,5], pointRadius: 0
+                    });
+                }
+            }
+
+            balmerChart = new Chart(ctx, {
+                data: { datasets: datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: true } },
+                    scales: {
+                        x: { type: 'linear', title: { display: true, text: '1/n²' }, grid: { color: colorGrid }, min: 0 },
+                        y: { title: { display: true, text: '1/λ (m⁻¹)' }, grid: { color: colorGrid } }
+                    }
+                }
+            });
+
+            chartMeta['c1'] = {
+                type: 'scatter', dataSets: datasets, labels: [],
+                xTitle: '1/n²', yTitle: '1/λ (m⁻¹)',
+                reportTitle: "Experiment 10: Balmer Series (Determination of Rydberg Constant)",
+                getStats: () => [
+                    { label: "R_H from Slope:", value: document.getElementById('stat-rh-slope').innerText + " m⁻¹" },
+                    { label: "R_H from Intercept:", value: document.getElementById('stat-rh-int').innerText + " m⁻¹" },
+                    { label: "Average Exp R_H:", value: document.getElementById('stat-rh-avg').innerText + " m⁻¹" },
+                    { line: true },
+                    { label: 'Accepted R_H:', value: '1.097e+7 m⁻¹' },
+                    { label: '% Error:', value: document.getElementById('stat-error-rh').innerText, isBadge: true }
+                ]
+            };
+        }
+
+        // --- DATA PERSISTENCE & UNSAVED STATE ---
+        function gatherData() {
+            const data = { he: [], h: [], spec: [], lines: document.getElementById('grating-lines').value };
+            document.querySelectorAll('#he-body tr').forEach(r => {
+                const i = r.querySelectorAll('input'); data.he.push({ c: i[0].value, l: i[1].value, m: i[2].value, t: i[3].value });
+            });
+            document.querySelectorAll('#h-body tr').forEach(r => {
+                const i = r.querySelectorAll('input'); data.h.push({ c: i[0].value, n: i[1].value, m: i[2].value, t: i[3].value });
+            });
+            document.querySelectorAll('#spec-body tr').forEach(r => {
+                const i = r.querySelectorAll('input'); data.spec.push({ id: i[0].value, t: i[1].value });
+            });
+            return data;
+        }
+
+        function checkUnsavedState() {
+            const currentStr = JSON.stringify(gatherData());
+            const btn = document.getElementById('btn-export');
+            if (lastSavedState !== null && currentStr !== lastSavedState) {
+                btn.classList.add('btn-unsaved'); btn.innerHTML = '📥 Export Data (Unsaved*)';
+            } else {
+                btn.classList.remove('btn-unsaved'); btn.innerHTML = '📥 Export Data (JSON)';
+            }
+            localStorage.setItem('phys43_lab10_data_autosave', currentStr);
+        }
+
+        function markAsSaved() {
+            lastSavedState = JSON.stringify(gatherData());
+            checkUnsavedState();
+        }
+
+        function loadData(sourceData) {
+            document.getElementById('he-body').innerHTML = '';
+            document.getElementById('h-body').innerHTML = '';
+            document.getElementById('spec-body').innerHTML = '';
+
+            if(sourceData) {
+                if(sourceData.lines) document.getElementById('grating-lines').value = sourceData.lines;
+                
+                if(sourceData.he && sourceData.he.length) sourceData.he.forEach(d => addHeRow(d.c, d.l, d.m, d.t));
+                else populateHeDefaults();
+
+                if(sourceData.h && sourceData.h.length) sourceData.h.forEach(d => addHRow(d.c, d.n, d.m, d.t));
+                else populateHDefaults();
+
+                if(sourceData.spec && sourceData.spec.length) sourceData.spec.forEach(d => addSpecRow(d.id, d.t));
+                else addSpecRow('', '');
+            } else {
+                document.getElementById('grating-lines').value = '600';
+                populateHeDefaults();
+                populateHDefaults();
+                addSpecRow('', '');
+            }
+            updateCalculations();
+            markAsSaved(); 
+        }
+
+        // --- EVENT LISTENERS ---
+
+        // 1. Enter Key Flow
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                e.preventDefault(); 
+                const inputs = Array.from(document.querySelectorAll('section input[type="number"], section input[type="text"]'));
+                const index = inputs.indexOf(e.target);
+                
+                if (index > -1) {
+                    if (index < inputs.length - 1) {
+                        inputs[index + 1].focus(); 
+                    } else {
+                        const tbody = e.target.closest('tbody');
+                        if(tbody) {
+                            if(tbody.id === 'he-body') addHeRow();
+                            else if(tbody.id === 'h-body') addHRow();
+                            else if(tbody.id === 'spec-body') addSpecRow();
+                            
+                            setTimeout(() => {
+                                const newInputs = Array.from(document.querySelectorAll('section input[type="number"], section input[type="text"]'));
+                                if(newInputs.length > inputs.length) newInputs[index + 1].focus();
+                            }, 50);
+                        }
+                    }
+                }
+            }
+        });
+
+        // 2. Drag & Drop JSON
+        const dropZone = document.body;
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); document.body.classList.add('drag-active'); });
+        dropZone.addEventListener('dragleave', (e) => { e.preventDefault(); document.body.classList.remove('drag-active'); });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault(); document.body.classList.remove('drag-active');
+            if (e.dataTransfer.files.length) {
+                const file = e.dataTransfer.files[0];
+                if (!file.name.endsWith('.json')) return alert('Please drop a valid JSON file.');
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try { loadData(JSON.parse(ev.target.result)); } 
+                    catch(err) { alert("Invalid JSON file structure."); }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // 3. Toolbar Buttons
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            if(confirm("Clear all data and reset table to default?")) { 
+                localStorage.removeItem('phys43_lab10_data_autosave'); 
+                loadData(null); 
+                lastSavedState = null; checkUnsavedState(); 
+            }
+        });
+
+        document.getElementById('btn-export').addEventListener('click', () => {
+            const dataStr = JSON.stringify(gatherData());
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([dataStr], {type: 'application/json'}));
+            a.download = 'phys43_lab10_spectra.json';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            markAsSaved(); 
+        });
+
+        document.getElementById('file-import').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const r = new FileReader();
+            r.onload = (ev) => {
+                try { loadData(JSON.parse(ev.target.result)); } 
+                catch(err) { alert("Invalid JSON file."); }
+                e.target.value = ''; 
+            };
+            r.readAsText(file);
+        });
+
+        // --- HD CHART EXPORTER ---
+        function exportHighResChart(chartKey, filename) {
+            const meta = chartMeta[chartKey];
+            if (!meta) return;
+
+            const chartCanvas = document.createElement('canvas');
+            chartCanvas.width = 1920; chartCanvas.height = 1080;
+            const chartCtx = chartCanvas.getContext('2d');
+
+            const originalColor = Chart.defaults.color;
+            Chart.defaults.color = '#000000'; Chart.defaults.font.size = 24;    
+
+            const tempChart = new Chart(chartCtx, {
+                type: meta.type,
+                data: { labels: meta.labels, datasets: meta.dataSets },
+                options: {
+                    responsive: false, animation: false, devicePixelRatio: 1, 
+                    plugins: { legend: { display: meta.dataSets.length > 1, labels: {color:'#000', font:{size:26}} }, tooltip: { enabled: false } },
+                    scales: {
+                        x: { type: 'linear', title: { display: true, text: meta.xTitle, font: { weight: 'bold', size: 34 }, color: '#000' }, ticks: { color: '#000', font: { size: 24 } }, grid: { color: '#e0e0e0' } },
+                        y: { type: 'linear', title: { display: true, text: meta.yTitle, font: { weight: 'bold', size: 34 }, color: '#000' }, ticks: { color: '#000', font: { size: 24 } }, grid: { color: '#e0e0e0' } }
+                    }
+                },
+                plugins: [{ id: 'bg', beforeDraw: (c) => { c.ctx.save(); c.ctx.fillStyle = '#ffffff'; c.ctx.fillRect(0, 0, c.width, c.height); c.ctx.restore(); } }]
+            });
+
+            const stats = meta.getStats();
+            let statsHeight = stats.reduce((acc, item) => {
+                if (item.line) return acc + 30;
+                if (item.label) return acc + 70;
+                if (item.explain) return acc + (item.explain.split('\n').length * 45) + 30;
+                return acc;
+            }, 0);
+
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = 1920; finalCanvas.height = 1250 + statsHeight + 80; 
+            const ctx = finalCanvas.getContext('2d');
+
+            ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+
+            ctx.fillStyle = '#000000'; ctx.font = 'bold 52px sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText(meta.reportTitle, finalCanvas.width / 2, 80);
+
+            ctx.drawImage(chartCanvas, 0, 120);
+
+            let currentY = 1250;
+            ctx.beginPath(); ctx.moveTo(150, currentY); ctx.lineTo(1770, currentY); ctx.lineWidth = 4; ctx.strokeStyle = '#b056ff'; ctx.stroke();
+            currentY += 70;
+
+            stats.forEach(item => {
+                if (item.line) {
+                    ctx.beginPath(); ctx.moveTo(200, currentY - 25); ctx.lineTo(1720, currentY - 25); ctx.lineWidth = 2; ctx.strokeStyle = '#eeeeee'; ctx.stroke(); currentY += 25;
+                } else if (item.label) {
+                    ctx.textAlign = 'left'; ctx.fillStyle = '#000000'; ctx.font = '38px sans-serif'; ctx.fillText(item.label, 200, currentY);
+                    ctx.textAlign = 'right';
+                    if (item.isBadge) {
+                        ctx.font = 'bold 32px sans-serif'; const w = ctx.measureText(item.value).width;
+                        ctx.fillStyle = '#f5e8ff'; ctx.fillRect(1720 - w - 40, currentY - 40, w + 40, 52);
+                        ctx.fillStyle = '#b056ff'; ctx.fillText(item.value, 1720 - 20, currentY);
+                    } else {
+                        ctx.font = 'bold 42px monospace'; ctx.fillStyle = '#b056ff'; ctx.fillText(item.value, 1720, currentY);
+                    }
+                    currentY += 70;
+                } else if (item.explain) {
+                    ctx.textAlign = 'left'; ctx.fillStyle = '#555555'; ctx.font = 'italic 34px serif'; 
+                    item.explain.split('\n').forEach(l => { ctx.fillText(l.trim(), 200, currentY); currentY += 45; });
+                    currentY += 20;
+                }
+            });
+
+            const link = document.createElement('a');
+            link.download = filename; link.href = finalCanvas.toDataURL('image/png', 1.0); link.click();
+
+            tempChart.destroy();
+            Chart.defaults.color = originalColor;
+        }
+
+        // --- INIT ---
+        window.addEventListener('DOMContentLoaded', () => {
+            const autosaved = localStorage.getItem('phys43_lab10_data_autosave');
+            if (autosaved) {
+                try { loadData(JSON.parse(autosaved)); } 
+                catch(e) { loadData(null); }
+            } else {
+                loadData(null);
+            }
+        });
+    </script>
+</body>
+</html>
