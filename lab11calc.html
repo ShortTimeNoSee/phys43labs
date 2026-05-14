@@ -7,29 +7,29 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            /* Theme: Cathode Ray / Electron Beam (Dark/Neon Green & Cyan) */
-            --primary: #39ff14;      /* CRT Green */
-            --primary-dark: #2eb80f;
-            --primary-light: #122114;
-            --accent: #00e5ff;       /* Electron Beam Cyan */
-            --accent-light: #80f2ff;
+            /* Theme: Quantum / Electron Beam (Deep Blue & Cyan) */
+            --primary: #00e5ff;      
+            --primary-dark: #00b3cc;
+            --primary-light: #161b22;
+            --accent: #3fb950;       
+            --accent-light: #56d364;
             --accent-purple: #b056ff; 
             
-            --bg-body: #080a0c;
-            --bg-card: #151b21;
-            --bg-table: #0d1115;
+            --bg-body: #0d1117;
+            --bg-card: #1c2128;
+            --bg-table: #12161d;
             --text-main: #c9d1d9;
             --text-heading: #f0f6fc;
             --text-muted: #8b949e;
-            --border: #26333d;
-            --input-bg: #030507;
+            --border: #30363d;
+            --input-bg: #010409;
             
-            --success: #39ff14;
+            --success: #3fb950;
             --warning: #d29922;
             --error: #f85149;
             
             --radius: 12px;
-            --shadow: 0 8px 24px rgba(0,0,0,0.6);
+            --shadow: 0 8px 24px rgba(0,0,0,0.5);
             --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             --font-mono: "JetBrains Mono", "Fira Code", Consolas, monospace;
         }
@@ -48,7 +48,7 @@
         /* --- Drag & Drop Overlay --- */
         #drop-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(57, 255, 20, 0.15);
+            background: rgba(0, 229, 255, 0.15);
             backdrop-filter: blur(4px);
             border: 4px dashed var(--primary);
             z-index: 9999; display: none;
@@ -58,7 +58,7 @@
         }
         body.drag-active #drop-overlay { display: flex; }
 
-        .container { max-width: 1450px; margin: 0 auto; padding: 0 1rem; display: grid; gap: 2rem; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 1rem; display: grid; gap: 2rem; }
 
         /* --- Header --- */
         header {
@@ -88,7 +88,7 @@
 
         /* --- Instructional Hints --- */
         .hint-box {
-            background: rgba(57, 255, 20, 0.05); border-left: 3px solid var(--primary);
+            background: rgba(0, 229, 255, 0.05); border-left: 3px solid var(--primary);
             padding: 1rem; margin-bottom: 1.5rem; font-size: 0.95rem; color: var(--text-muted);
             border-radius: 0 var(--radius) var(--radius) 0;
         }
@@ -99,7 +99,6 @@
             background: var(--primary-light); border: 1px dashed var(--border);
             padding: 1rem; border-radius: var(--radius); margin-bottom: 1.5rem;
             display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-around;
-            align-items: center;
         }
         .math-display { font-family: var(--font-mono); font-size: 1.15rem; text-align: center; color: var(--primary); }
         .math-display.accent { color: var(--accent); }
@@ -108,16 +107,16 @@
 
         /* --- Trace Box --- */
         .trace-box {
-            background: var(--input-bg); border: 1px solid var(--border); border-left: 4px solid var(--accent);
+            background: var(--input-bg); border: 1px solid var(--border); border-left: 4px solid var(--accent-purple);
             padding: 1rem; border-radius: var(--radius); font-family: var(--font-mono);
-            font-size: 0.9rem; color: var(--text-main); margin-top: 1.5rem; white-space: pre-wrap; line-height: 1.6;
+            font-size: 0.9rem; color: var(--text-main); margin-top: 1rem; white-space: pre-wrap; line-height: 1.6;
             overflow-x: auto; word-wrap: break-word;
         }
 
         /* --- Layouts --- */
         .grid-layout { 
             display: grid; 
-            grid-template-columns: 3fr 2fr; 
+            grid-template-columns: 2fr 1fr; 
             gap: 2rem; 
             width: 100%;
         }
@@ -130,7 +129,7 @@
             width: 100%; max-width: 100%;
         }
         table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-        th { background: rgba(0, 0, 0, 0.4); color: var(--text-main); text-align: center; padding: 0.85rem; font-weight: 600; white-space: nowrap; border-bottom: 2px solid var(--border); }
+        th { background: rgba(0, 0, 0, 0.3); color: var(--text-main); text-align: center; padding: 0.85rem; font-weight: 600; white-space: nowrap; border-bottom: 2px solid var(--border); }
         td { padding: 0.5rem; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; }
         .calc-cell { color: var(--primary); font-weight: bold; font-family: var(--font-mono); }
         .calc-cell-accent { color: var(--accent); font-weight: bold; font-family: var(--font-mono); }
@@ -155,27 +154,25 @@
             }
             td:last-child { border-bottom: 0; padding: 1rem; justify-content: center; }
             td:last-child:before { display: none; }
-            input[type="number"], input[type="text"], select { width: 100%; max-width: 160px; text-align: right; }
+            input[type="number"] { width: 100%; max-width: 160px; text-align: right; }
             .btn-danger { width: 100%; padding: 0.8rem; font-size: 0.9rem;}
         }
 
         /* --- Inputs --- */
-        input[type="number"], input[type="text"], select {
+        input[type="number"] {
             width: 100%; min-width: 60px; padding: 0.6rem; border: 1px solid var(--border);
             border-radius: 6px; background: var(--input-bg); color: var(--text-heading);
             font-family: var(--font-mono); text-align: center; transition: all 0.2s;
         }
-        input[type="number"]:focus, input[type="text"]:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(57, 255, 20, 0.2); }
+        input[type="number"]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.2); }
 
         .global-input-group {
             display: flex; align-items: center; gap: 1.5rem; background: var(--bg-table);
             padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border);
             margin-bottom: 1.5rem; justify-content: center; flex-wrap: wrap;
         }
-        .global-input-group .param { display: flex; align-items: center; gap: 0.5rem; }
-        .global-input-group label { font-weight: bold; color: var(--text-heading); font-size: 0.95rem; }
-        .global-input-group input { max-width: 120px; font-size: 1.05rem; border-color: var(--border); }
-        .global-input-group .const-badge { background: rgba(255,255,255,0.05); padding: 0.4rem 0.8rem; border-radius: 6px; font-family: var(--font-mono); font-size: 0.9rem; color: var(--text-muted); border: 1px solid var(--border); }
+        .global-input-group label { font-weight: bold; color: var(--text-heading); font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;}
+        .global-input-group input { max-width: 120px; font-size: 1.1rem; border-color: var(--border); }
 
         /* --- Buttons & Toolbar --- */
         .btn-toolbar { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center;}
@@ -191,7 +188,7 @@
         .btn-primary { background: var(--primary); color: #000; }
         .btn-primary:hover { background: var(--primary-dark); }
         .btn-accent { background: var(--accent); color: #000; }
-        .btn-accent:hover { background: #00b8cc; }
+        .btn-accent:hover { background: var(--accent-light); }
         .btn-outline { background: transparent; border-color: var(--border); color: var(--text-main); }
         .btn-outline:hover { background: var(--border); color: #fff; }
         .btn-danger { background: rgba(248, 81, 73, 0.1); color: var(--error); }
@@ -231,19 +228,20 @@
             font-size: 0.85rem; font-weight: bold; font-family: var(--font-mono);
             white-space: nowrap; 
         }
-        .badge-good { background: rgba(57, 255, 20, 0.15); color: var(--success); border: 1px solid rgba(57, 255, 20, 0.3); }
+        .badge-good { background: rgba(63, 185, 80, 0.15); color: var(--success); border: 1px solid rgba(63, 185, 80, 0.3); }
         .badge-warn { background: rgba(210, 153, 34, 0.15); color: var(--warning); border: 1px solid rgba(210, 153, 34, 0.3); }
         .badge-bad { background: rgba(248, 81, 73, 0.15); color: var(--error); border: 1px solid rgba(248, 81, 73, 0.3); }
 
         /* --- Charts --- */
         .chart-wrapper {
-            position: relative; height: 350px; width: 100%; background: var(--bg-card);
+            position: relative; height: 380px; width: 100%; background: var(--bg-card);
             border-radius: var(--radius); padding: 0.5rem; border: 1px solid var(--border);
             margin-top: 1rem; flex-grow: 1;
         }
 
         /* --- Utilities --- */
         .flex-between { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 0; border-top: 1px solid var(--border); }
+        .mt-1 { margin-top: 1rem; } .mb-1 { margin-bottom: 1rem; }
         footer { text-align: center; margin-top: 3rem; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 1.5rem; }
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
     </style>
@@ -255,7 +253,7 @@
     <header>
         <h1>Experiment 11: Electron Diffraction</h1>
         <p class="meta">
-            Process diffraction ring diameters to verify the de Broglie wavelength of an electron and calculate the lattice spacing of graphite.
+            Process electron diffraction tube measurements to determine the lattice spacing of graphite and verify the de Broglie wavelength relation.
         </p>
         <div class="btn-toolbar center">
              <button id="btn-export" class="btn btn-outline" aria-live="polite">📥 Export Data (JSON)</button>
@@ -270,64 +268,62 @@
     <div class="container">
 
         <div class="global-input-group">
-            <div class="param">
-                <label>Tube Length (L):</label>
-                <input type="number" id="tube-L" value="0.135" step="any" oninput="updateCalculations()">
-                <span style="color: var(--text-muted);">m</span>
-            </div>
-            <div class="const-badge" title="Planck's Constant">h = 6.626 &times; 10⁻³⁴ J&middot;s</div>
-            <div class="const-badge" title="Electron Mass">m<sub>e</sub> = 9.109 &times; 10⁻³¹ kg</div>
-            <div class="const-badge" title="Elementary Charge">e = 1.602 &times; 10⁻¹⁹ C</div>
+            <label>Tube Length (L):
+                <input type="number" id="param-L" value="125" step="any" oninput="updateCalculations()"> mm
+            </label>
+            <label>Glass Thickness (&omega;):
+                <input type="number" id="param-omega" value="2" step="any" oninput="updateCalculations()"> mm
+            </label>
         </div>
 
         <section id="part1">
             <div class="section-header">
                 <h2>1. Diffraction Ring Measurements</h2>
-                <span class="badge badge-good">D vs V<sub>a</sub><sup>-0.5</sup></span>
+                <span class="badge badge-good">d = (m &middot; h &middot; L) / &radic;(2m<sub>e</sub>)</span>
             </div>
             <div class="card-body">
                 <div class="hint-box">
-                    <strong>Bench Setup:</strong> Adjust the anode high voltage (V<sub>a</sub>) from 2500 V to 5000 V. At each interval, measure the inner and outer ring arc lengths (S). Use the provided lab diagram to extrapolate the arc lengths (S) into straight-line chord diameters (D). Enter the corrected D values below. 
-                    <br><br><em>Note: You may leave the 'S' columns blank if you only wish to record the final extrapolated 'D' values.</em>
+                    <strong>Bench Setup:</strong> Using the electron diffraction tube, adjust the accelerating voltage &Delta;V<sub>a</sub> from 2,500 V to 5,000 V. Measure the arc length diameter (S) of both the inner and outer diffracted rings directly off the glass globe for each voltage. The calculator will automatically compensate for the glass curvature to find the flat diameter (D).
                 </div>
 
                 <div class="formula-card">
                     <div>
-                        <div class="math-display">&lambda; = h / &radic;(2emV<sub>a</sub>)</div>
-                        <span class="var-def">de Broglie Wavelength</span>
+                        <div class="math-display">D = (S &middot; L) / (L - &omega;)</div>
+                        <span class="var-def">Curvature Correction (Flat Diameter)</span>
                     </div>
                     <div>
-                        <div class="math-display">D = (2L&lambda;) / d</div>
-                        <span class="var-def">Diffraction Ring Diameter</span>
+                        <div class="math-display accent">tan(&theta;) &approx; &theta; = D / 2L</div>
+                        <span class="var-def">Small Angle Approximation</span>
                     </div>
                     <div>
-                        <div class="math-display accent">D = [2Lh / (d&radic;2em)] &middot; V<sub>a</sub><sup>-0.5</sup></div>
-                        <span class="var-def">Linear Plot (y = mx)</span>
+                        <div class="math-display purple">y = 1 / &radic;(e &middot; &Delta;V<sub>a</sub>)</div>
+                        <span class="var-def">Y-Axis Plot Variable (J<sup>-1/2</sup>)</span>
                     </div>
                 </div>
 
                 <div class="grid-layout">
                     <div>
                         <div class="btn-toolbar mb-1">
-                            <button class="btn btn-primary btn-sm" onclick="addDiffractionRow()">+ Add Measurement</button>
-                            <button class="btn btn-outline btn-sm" onclick="populateDefaults()">Load Standard Sweep</button>
+                            <button class="btn btn-primary btn-sm" onclick="addMeasurementRow()">+ Add Voltage Step</button>
+                            <button class="btn btn-outline btn-sm" onclick="populateDefaults()">Load 2.5k–5k Sweep</button>
                         </div>
                         <div class="table-container">
-                            <table id="diff-table">
+                            <table id="meas-table">
                                 <thead>
                                     <tr>
                                         <th>&Delta;V<sub>a</sub> (V)</th>
-                                        <th>Inner S (m)</th>
-                                        <th>Inner D (m)</th>
-                                        <th>Outer S (m)</th>
-                                        <th>Outer D (m)</th>
-                                        <th>V<sub>a</sub><sup>-0.5</sup> (V<sup>-0.5</sup>)</th>
+                                        <th>Inner S (mm)</th>
+                                        <th>Outer S (mm)</th>
+                                        <th>Inner D (mm)</th>
+                                        <th>Outer D (mm)</th>
+                                        <th>1/&radic;(e&Delta;V<sub>a</sub>)</th>
                                         <th></th>
                                     </tr>
                                 </thead>
-                                <tbody id="diff-body"></tbody>
+                                <tbody id="meas-body"></tbody>
                             </table>
                         </div>
+                        
                         <div class="trace-box" id="calc-trace"><span style="color: var(--text-muted);">Live Calculation Trace (Enter data to see derivation)...</span></div>
                     </div>
 
@@ -336,38 +332,38 @@
                         
                         <div class="stat-grid">
                             <div class="stat-card" style="border-top: 3px solid var(--primary);">
-                                <span>Inner Ring Spacing (d₁)</span>
-                                <strong id="stat-d-inner" class="primary-val" style="font-size: 1.2rem;">--</strong>
+                                <span>Inner Ring d<sub>10</sub></span>
+                                <strong id="stat-d-inner" class="primary-val">--</strong>
                             </div>
                             <div class="stat-card" style="border-top: 3px solid var(--accent);">
-                                <span>Outer Ring Spacing (d₂)</span>
-                                <strong id="stat-d-outer" class="accent-val" style="font-size: 1.2rem;">--</strong>
+                                <span>Outer Ring d<sub>11</sub></span>
+                                <strong id="stat-d-outer" class="accent-val">--</strong>
                             </div>
                         </div>
 
-                        <div style="background: var(--bg-card); padding: 0.8rem 1rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 0.8rem;">
-                            <div class="flex-between" style="border: none; padding: 0;">
-                                <span style="font-size: 0.85rem; color: var(--text-muted);">Accepted Inner d₁:</span>
-                                <strong style="font-family: var(--font-mono); color: var(--primary);">2.13e-10 m</strong>
+                        <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1rem;">
+                            <div class="flex-between" style="border: none; padding-top: 0;">
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">Accepted Inner d<sub>10</sub>:</span>
+                                <strong style="font-family: var(--font-mono); color: var(--text-heading);">0.213 nm</strong>
                             </div>
-                            <div class="flex-between" style="padding-bottom: 0; padding-top: 0.5rem;">
+                            <div class="flex-between" style="padding-bottom: 0;">
                                 <span style="font-size: 0.85rem; color: var(--text-muted);">% Error (Inner):</span>
-                                <span id="stat-err-inner" class="badge">--</span>
+                                <span id="stat-error-inner" class="badge">--</span>
                             </div>
                         </div>
 
-                        <div style="background: var(--bg-card); padding: 0.8rem 1rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1rem;">
-                            <div class="flex-between" style="border: none; padding: 0;">
-                                <span style="font-size: 0.85rem; color: var(--text-muted);">Accepted Outer d₂:</span>
-                                <strong style="font-family: var(--font-mono); color: var(--accent);">1.23e-10 m</strong>
+                        <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 1rem;">
+                            <div class="flex-between" style="border: none; padding-top: 0;">
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">Accepted Outer d<sub>11</sub>:</span>
+                                <strong style="font-family: var(--font-mono); color: var(--text-heading);">0.123 nm</strong>
                             </div>
-                            <div class="flex-between" style="padding-bottom: 0; padding-top: 0.5rem;">
+                            <div class="flex-between" style="padding-bottom: 0;">
                                 <span style="font-size: 0.85rem; color: var(--text-muted);">% Error (Outer):</span>
-                                <span id="stat-err-outer" class="badge">--</span>
+                                <span id="stat-error-outer" class="badge">--</span>
                             </div>
                         </div>
 
-                        <div class="chart-wrapper" style="height: 300px;">
+                        <div class="chart-wrapper">
                             <canvas id="diffChart"></canvas>
                         </div>
                         <div class="btn-toolbar right mt-1">
@@ -386,31 +382,27 @@
 
     <script>
         // --- GLOBAL STATE & CONSTANTS ---
-        const CONST_H = 6.62607e-34; // J*s
-        const CONST_E = 1.60218e-19; // C
-        const CONST_ME = 9.10938e-31; // kg
-        
-        // Accepted Graphite Lattice Spacings
-        const ACCEPTED_D_INNER = 2.13e-10; // m (d_10)
-        const ACCEPTED_D_OUTER = 1.23e-10; // m (d_11)
+        const CONST_H = 6.62607015e-34; // J*s
+        const CONST_ME = 9.10938356e-31; // kg
+        const CONST_E = 1.60217663e-19; // C
+
+        const ACCEPTED_D_INNER = 0.213; // nm
+        const ACCEPTED_D_OUTer = 0.123; // nm
         
         let diffChart = null;
         let chartMeta = { c1: null };
         let lastSavedState = null;
 
-        // Realistic theoretical defaults + a little noise
         const DEFAULTS = [
-            { v: 2500, sin: '', din: '0.0311', sout: '', dout: '0.0538' },
-            { v: 3000, sin: '', din: '0.0284', sout: '', dout: '0.0491' },
-            { v: 3500, sin: '', din: '0.0263', sout: '', dout: '0.0455' },
-            { v: 4000, sin: '', din: '0.0245', sout: '', dout: '0.0425' },
-            { v: 4500, sin: '', din: '0.0232', sout: '', dout: '0.0401' },
-            { v: 5000, sin: '', din: '0.0220', sout: '', dout: '0.0381' }
+            { v: 2500, si: 24.3, so: 42.1 },
+            { v: 3000, si: 22.1, so: 38.4 },
+            { v: 3500, si: 20.4, so: 35.6 },
+            { v: 4000, si: 19.1, so: 33.3 },
+            { v: 4500, si: 18.0, so: 31.4 },
+            { v: 5000, si: 17.1, so: 29.8 }
         ];
 
         // --- MATH UTILS ---
-        // Forces line through origin if required, but standard linear fit is usually safer for real lab data.
-        // We will do standard linear fit to account for systemic zero-offsets, but extract slope.
         function linearFit(x, y) {
             const n = x.length;
             if (n < 2) return null;
@@ -431,11 +423,9 @@
         }
 
         // --- UI & TABLE LOGIC ---
-        function createInput(val, type='number', placeholder='', oninputFn) {
+        function createInput(val, placeholder='', oninputFn) {
             const input = document.createElement('input');
-            input.type = type; 
-            if(type === 'number') input.step = 'any'; 
-            input.value = val;
+            input.type = 'number'; input.step = 'any'; input.value = val;
             input.placeholder = placeholder; input.oninput = oninputFn;
             return input;
         }
@@ -447,42 +437,36 @@
             return btn;
         }
 
-        function addDiffractionRow(v='', sin='', din='', sout='', dout='') {
-            const tbody = document.getElementById('diff-body');
+        function addMeasurementRow(v='', si='', so='') {
+            const tbody = document.getElementById('meas-body');
             const row = tbody.insertRow();
             
-            row.insertCell().appendChild(createInput(v, 'number', 'V', updateCalculations)).parentNode.setAttribute('data-label', 'ΔVa (V)');
-            row.insertCell().appendChild(createInput(sin, 'number', 'S_in', updateCalculations)).parentNode.setAttribute('data-label', 'Inner S (m)');
-            row.insertCell().appendChild(createInput(din, 'number', 'D_in', updateCalculations)).parentNode.setAttribute('data-label', 'Inner D (m)');
-            row.insertCell().appendChild(createInput(sout, 'number', 'S_out', updateCalculations)).parentNode.setAttribute('data-label', 'Outer S (m)');
-            row.insertCell().appendChild(createInput(dout, 'number', 'D_out', updateCalculations)).parentNode.setAttribute('data-label', 'Outer D (m)');
+            row.insertCell().appendChild(createInput(v, 'Voltage', updateCalculations)).parentNode.setAttribute('data-label', 'ΔV_a (V)');
+            row.insertCell().appendChild(createInput(si, 'S (inner)', updateCalculations)).parentNode.setAttribute('data-label', 'Inner S (mm)');
+            row.insertCell().appendChild(createInput(so, 'S (outer)', updateCalculations)).parentNode.setAttribute('data-label', 'Outer S (mm)');
             
-            const cellInvRoot = row.insertCell(); cellInvRoot.setAttribute('data-label', 'Va⁻⁰.⁵'); cellInvRoot.className = 'calc-cell'; cellInvRoot.innerText = '--';
+            const cDi = row.insertCell(); cDi.setAttribute('data-label', 'Inner D (mm)'); cDi.className = 'calc-cell'; cDi.innerText = '--';
+            const cDo = row.insertCell(); cDo.setAttribute('data-label', 'Outer D (mm)'); cDo.className = 'calc-cell-accent'; cDo.innerText = '--';
+            const cY = row.insertCell(); cY.setAttribute('data-label', '1/√(eΔVa)'); cY.style.fontFamily = 'var(--font-mono)'; cY.innerText = '--';
             
             row.insertCell().appendChild(createDelBtn(row, updateCalculations));
+            
             updateCalculations();
         }
 
         function populateDefaults() {
-            document.getElementById('diff-body').innerHTML = '';
-            DEFAULTS.forEach(d => addDiffractionRow(d.v, d.sin, d.din, d.sout, d.dout));
+            document.getElementById('meas-body').innerHTML = '';
+            DEFAULTS.forEach(d => addMeasurementRow(d.v, d.si, d.so));
         }
 
         // --- MASTER UPDATE LOGIC ---
         function updateCalculations() {
-            const L_tube = parseFloat(document.getElementById('tube-L').value);
-            if(isNaN(L_tube) || L_tube <= 0) return; // Wait for valid tube length
-
-            // Calculate the theoretical proportionality constant K
-            // D = [2Lh / (d * sqrt(2em))] * V^-0.5
-            // So slope m = 2Lh / (d * sqrt(2em))
-            // d = 2Lh / (m * sqrt(2em))
+            const L_mm = parseFloat(document.getElementById('param-L').value);
+            const omega_mm = parseFloat(document.getElementById('param-omega').value);
             
-            const sqrt_2em = Math.sqrt(2 * CONST_E * CONST_ME); // ~ 5.4027e-25
-            const const_numerator = 2 * L_tube * CONST_H;
-            const K_system = const_numerator / sqrt_2em; // ~ 3.311e-10 (for L=0.135)
+            const L_m = L_mm * 1e-3; // meters for physics calculations
 
-            const rows = document.getElementById('diff-body').rows;
+            const rows = document.getElementById('meas-body').rows;
             const ptsInner = [];
             const ptsOuter = [];
             let traceHtml = '';
@@ -491,87 +475,102 @@
                 const r = rows[i];
                 const inputs = r.querySelectorAll('input');
                 const v = parseFloat(inputs[0].value);
-                const d_in = parseFloat(inputs[2].value);
-                const d_out = parseFloat(inputs[4].value);
-                const cInvRoot = r.cells[5];
+                const si = parseFloat(inputs[1].value);
+                const so = parseFloat(inputs[2].value);
+                
+                const cDi = r.cells[3];
+                const cDo = r.cells[4];
+                const cY = r.cells[5];
 
-                if(!isNaN(v) && v > 0) {
-                    const invRootV = Math.pow(v, -0.5);
-                    cInvRoot.innerText = invRootV.toExponential(4);
+                if(!isNaN(v) && v > 0 && !isNaN(L_mm) && !isNaN(omega_mm)) {
+                    // Y-axis calculation: 1 / sqrt(e * Va)
+                    const y_val = 1 / Math.sqrt(CONST_E * v); // Units: J^(-1/2)
+                    cY.innerText = y_val.toExponential(3);
 
-                    if(!isNaN(d_in) && d_in > 0) ptsInner.push({ x: invRootV, y: d_in, rawV: v });
-                    if(!isNaN(d_out) && d_out > 0) ptsOuter.push({ x: invRootV, y: d_out, rawV: v });
+                    let calcDi = null, calcDo = null;
 
-                    // Update trace for the first valid row we find
-                    if(!traceHtml && (!isNaN(d_in) || !isNaN(d_out))) {
-                        traceHtml = `Row ${i+1} Trace (V<sub>a</sub> = ${v} V):\n` +
-                                    `V<sub>a</sub><sup>-0.5</sup> = 1 / &radic;${v} = <span style="color:var(--primary)">${invRootV.toExponential(4)} V<sup>-0.5</sup></span>\n\n`;
+                    if(!isNaN(si) && si > 0) {
+                        calcDi = (si * L_mm) / (L_mm - omega_mm);
+                        cDi.innerText = calcDi.toFixed(2);
+                        ptsInner.push({ x: calcDi, y: y_val, v: v });
+                    } else cDi.innerText = '--';
+
+                    if(!isNaN(so) && so > 0) {
+                        calcDo = (so * L_mm) / (L_mm - omega_mm);
+                        cDo.innerText = calcDo.toFixed(2);
+                        ptsOuter.push({ x: calcDo, y: y_val, v: v });
+                    } else cDo.innerText = '--';
+
+                    if(i === 0 && (!isNaN(si) || !isNaN(so))) {
+                        const s_demo = isNaN(si) ? so : si;
+                        const d_demo = isNaN(calcDi) ? calcDo : calcDi;
+                        
+                        traceHtml = `Row 1 Trace (V = ${v} V, S = ${s_demo} mm):\n` +
+                                    `<span style="color:var(--text-muted)">1. Curvature Correction</span>\n` +
+                                    `D = (S &middot; L) / (L - &omega;)\n` +
+                                    `D = (${s_demo} &middot; ${L_mm}) / (${L_mm} - ${omega_mm}) = <span style="color:var(--primary)">${d_demo.toFixed(2)} mm</span>\n\n` +
+                                    `<span style="color:var(--text-muted)">2. Y-Axis Variable Setup</span>\n` +
+                                    `y = 1 / &radic;(e &middot; &Delta;V<sub>a</sub>) = 1 / &radic;(1.602&times;10<sup>-19</sup> C &middot; ${v} V)\n` +
+                                    `y = <span style="color:var(--accent-purple)">${y_val.toExponential(4)} J<sup>-1/2</sup></span>`;
                     }
                 } else {
-                    cInvRoot.innerText = '--';
+                    cDi.innerText = '--'; cDo.innerText = '--'; cY.innerText = '--';
                 }
             }
 
-            const outDIn = document.getElementById('stat-d-inner');
-            const outDOut = document.getElementById('stat-d-outer');
-            const errIn = document.getElementById('stat-err-inner');
-            const errOut = document.getElementById('stat-err-outer');
+            const outDi = document.getElementById('stat-d-inner');
+            const outDo = document.getElementById('stat-d-outer');
+            const errDi = document.getElementById('stat-error-inner');
+            const errDo = document.getElementById('stat-error-outer');
 
             let fitInner = null, fitOuter = null;
-            let calc_d_in = null, calc_d_out = null;
 
-            traceHtml += `<span style="color:var(--text-muted)">System Constant K:</span>\n` +
-                         `K = 2Lh / &radic;(2em)\n` +
-                         `K = (2 &middot; ${L_tube} &middot; ${CONST_H.toExponential(4)}) / &radic;(2 &middot; ${CONST_E.toExponential(4)} &middot; ${CONST_ME.toExponential(4)})\n` +
-                         `K = ${K_system.toExponential(4)} m&middot;V<sup>0.5</sup>\n\n`;
-
-            // Inner Ring Analysis
             if(ptsInner.length > 1) {
                 fitInner = linearFit(ptsInner.map(p=>p.x), ptsInner.map(p=>p.y));
-                calc_d_in = K_system / fitInner.slope;
-                outDIn.innerText = calc_d_in.toExponential(3) + ' m';
+                // Slope m_plot is (J^-1/2) / mm. We need m_SI in (J^-1/2) / m
+                const m_SI = fitInner.slope * 1000; 
+                // d = (m * h * L) / sqrt(2 * me)
+                const d_inner_m = (m_SI * CONST_H * L_m) / Math.sqrt(2 * CONST_ME);
+                const d_inner_nm = d_inner_m * 1e9;
                 
-                const err = Math.abs((calc_d_in - ACCEPTED_D_INNER) / ACCEPTED_D_INNER) * 100;
-                errIn.innerText = err.toFixed(2) + '%';
-                errIn.className = err < 5 ? 'badge badge-good' : (err < 15 ? 'badge badge-warn' : 'badge badge-bad');
+                outDi.innerText = d_inner_nm.toFixed(3) + ' nm';
+                const err = Math.abs((d_inner_nm - ACCEPTED_D_INNER) / ACCEPTED_D_INNER) * 100;
+                errDi.innerText = err.toFixed(2) + '%';
+                errDi.className = err < 5 ? 'badge badge-good' : (err < 10 ? 'badge badge-warn' : 'badge badge-bad');
 
-                traceHtml += `<span style="color:var(--primary)">Inner Ring Spacing:</span>\n` +
-                             `Slope (m<sub>inner</sub>) = ${fitInner.slope.toFixed(4)} m&middot;V<sup>0.5</sup>\n` +
-                             `d<sub>1</sub> = K / m<sub>inner</sub> = ${K_system.toExponential(4)} / ${fitInner.slope.toFixed(4)}\n` +
-                             `d<sub>1</sub> = <span style="color:var(--primary)">${calc_d_in.toExponential(3)} m</span>\n\n`;
+                if(traceHtml) {
+                    traceHtml += `\n\n<span style="color:var(--text-muted)">3. Lattice Extraction (Inner Ring)</span>\n` +
+                                 `Slope m<sub>plot</sub> = ${fitInner.slope.toExponential(4)} J<sup>-1/2</sup> mm<sup>-1</sup>\n` +
+                                 `m<sub>SI</sub> = m<sub>plot</sub> &middot; 1000 = ${m_SI.toExponential(4)} J<sup>-1/2</sup> m<sup>-1</sup>\n` +
+                                 `d = (m<sub>SI</sub> &middot; h &middot; L) / &radic;(2m<sub>e</sub>)\n` +
+                                 `d = <span style="color:var(--primary)">${d_inner_nm.toFixed(3)} nm</span>`;
+                }
             } else {
-                outDIn.innerText = '--'; errIn.innerText = '--'; errIn.className = 'badge';
+                outDi.innerText = '--'; errDi.innerText = '--'; errDi.className = 'badge';
             }
 
-            // Outer Ring Analysis
             if(ptsOuter.length > 1) {
                 fitOuter = linearFit(ptsOuter.map(p=>p.x), ptsOuter.map(p=>p.y));
-                calc_d_out = K_system / fitOuter.slope;
-                outDOut.innerText = calc_d_out.toExponential(3) + ' m';
+                const m_SI = fitOuter.slope * 1000; 
+                const d_outer_m = (m_SI * CONST_H * L_m) / Math.sqrt(2 * CONST_ME);
+                const d_outer_nm = d_outer_m * 1e9;
                 
-                const err = Math.abs((calc_d_out - ACCEPTED_D_OUTER) / ACCEPTED_D_OUTER) * 100;
-                errOut.innerText = err.toFixed(2) + '%';
-                errOut.className = err < 5 ? 'badge badge-good' : (err < 15 ? 'badge badge-warn' : 'badge badge-bad');
-
-                traceHtml += `<span style="color:var(--accent)">Outer Ring Spacing:</span>\n` +
-                             `Slope (m<sub>outer</sub>) = ${fitOuter.slope.toFixed(4)} m&middot;V<sup>0.5</sup>\n` +
-                             `d<sub>2</sub> = K / m<sub>outer</sub> = ${K_system.toExponential(4)} / ${fitOuter.slope.toFixed(4)}\n` +
-                             `d<sub>2</sub> = <span style="color:var(--accent)">${calc_d_out.toExponential(3)} m</span>`;
+                outDo.innerText = d_outer_nm.toFixed(3) + ' nm';
+                const err = Math.abs((d_outer_nm - ACCEPTED_D_OUTer) / ACCEPTED_D_OUTer) * 100;
+                errDo.innerText = err.toFixed(2) + '%';
+                errDo.className = err < 5 ? 'badge badge-good' : (err < 10 ? 'badge badge-warn' : 'badge badge-bad');
             } else {
-                outDOut.innerText = '--'; errOut.innerText = '--'; errOut.className = 'badge';
+                outDo.innerText = '--'; errDo.innerText = '--'; errDo.className = 'badge';
             }
 
-            if(!traceHtml.includes("Slope")) {
-                traceHtml = '<span style="color: var(--text-muted);">Enter D measurements for at least 2 voltage intervals to view linear regression derivation...</span>';
-            }
-
-            document.getElementById('calc-trace').innerHTML = traceHtml;
-            drawDiffChart(ptsInner, ptsOuter, fitInner, fitOuter);
+            document.getElementById('calc-trace').innerHTML = traceHtml || '<span style="color: var(--text-muted);">Enter measurement data for at least 2 voltages to view derivation...</span>';
+            
+            drawChart(ptsInner, ptsOuter, fitInner, fitOuter);
             checkUnsavedState();
         }
 
         // --- GRAPHING ---
-        function drawDiffChart(ptsIn, ptsOut, fitIn, fitOut) {
+        function drawChart(ptsIn, ptsOut, fitIn, fitOut) {
             const ctx = document.getElementById('diffChart').getContext('2d');
             const colorGrid = getComputedStyle(document.body).getPropertyValue('--border').trim();
             const colorIn = getComputedStyle(document.body).getPropertyValue('--primary').trim();
@@ -581,46 +580,33 @@
             Chart.defaults.color = getComputedStyle(document.body).getPropertyValue('--text-main').trim();
 
             let datasets = [];
-            
-            // X min/max calculation for lines
-            let allX = [...ptsIn.map(p=>p.x), ...ptsOut.map(p=>p.x)];
-            let xMin = allX.length ? Math.min(0, Math.min(...allX)) : 0;
-            let xMax = allX.length ? Math.max(...allX) * 1.1 : 0.03;
+            let allX = [];
 
             if(ptsIn.length > 0) {
-                datasets.push({
-                    label: 'Inner Ring D',
-                    data: ptsIn,
-                    type: 'scatter',
-                    backgroundColor: colorIn,
-                    pointRadius: 6, pointHoverRadius: 8
-                });
+                datasets.push({ label: 'Inner Ring D', data: ptsIn, type: 'scatter', backgroundColor: colorIn, pointRadius: 6, pointHoverRadius: 8 });
+                allX.push(...ptsIn.map(d=>d.x));
+            }
+            if(ptsOut.length > 0) {
+                datasets.push({ label: 'Outer Ring D', data: ptsOut, type: 'scatter', backgroundColor: colorOut, pointRadius: 6, pointHoverRadius: 8 });
+                allX.push(...ptsOut.map(d=>d.x));
+            }
+
+            if(allX.length > 0) {
+                const xMin = 0;
+                const xMax = Math.max(...allX) * 1.1;
+
                 if(fitIn) {
                     datasets.push({
                         label: 'Inner Fit',
                         data: [{x: xMin, y: fitIn.intercept}, {x: xMax, y: fitIn.slope*xMax + fitIn.intercept}],
-                        type: 'line',
-                        borderColor: colorIn,
-                        borderDash: [5,5], pointRadius: 0
+                        type: 'line', borderColor: colorIn, borderDash: [5,5], pointRadius: 0
                     });
                 }
-            }
-
-            if(ptsOut.length > 0) {
-                datasets.push({
-                    label: 'Outer Ring D',
-                    data: ptsOut,
-                    type: 'scatter',
-                    backgroundColor: colorOut,
-                    pointRadius: 6, pointHoverRadius: 8
-                });
                 if(fitOut) {
                     datasets.push({
                         label: 'Outer Fit',
                         data: [{x: xMin, y: fitOut.intercept}, {x: xMax, y: fitOut.slope*xMax + fitOut.intercept}],
-                        type: 'line',
-                        borderColor: colorOut,
-                        borderDash: [5,5], pointRadius: 0
+                        type: 'line', borderColor: colorOut, borderDash: [5,5], pointRadius: 0
                     });
                 }
             }
@@ -631,32 +617,35 @@
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: true } },
                     scales: {
-                        x: { type: 'linear', title: { display: true, text: 'V_a⁻⁰.⁵ (V⁻⁰.⁵)' }, grid: { color: colorGrid }, min: 0 },
-                        y: { title: { display: true, text: 'Ring Diameter D (m)' }, grid: { color: colorGrid }, min: 0 }
+                        x: { type: 'linear', title: { display: true, text: 'Flat Diameter D (mm)' }, grid: { color: colorGrid }, min: 0 },
+                        y: { title: { display: true, text: '1/√(e ΔVa) [J⁻¹/²]' }, grid: { color: colorGrid }, min: 0 }
                     }
                 }
             });
 
             chartMeta['c1'] = {
                 type: 'scatter', dataSets: datasets, labels: [],
-                xTitle: 'V_a⁻⁰.⁵ (V⁻⁰.⁵)', yTitle: 'Ring Diameter D (m)',
-                reportTitle: "Experiment 11: Electron Diffraction (D vs V_a⁻⁰.⁵)",
+                xTitle: 'Corrected Diameter D (mm)', yTitle: '1 / √(e · ΔVa) [J⁻¹/²]',
+                reportTitle: "Experiment 11: Electron Diffraction",
                 getStats: () => [
-                    { label: "Inner Ring Spacing d₁:", value: document.getElementById('stat-d-inner').innerText },
-                    { label: "% Error (Inner):", value: document.getElementById('stat-err-inner').innerText, isBadge: true },
+                    { label: "Inner Lattice Spacing (d₁₀):", value: document.getElementById('stat-d-inner').innerText },
+                    { label: "Outer Lattice Spacing (d₁₁):", value: document.getElementById('stat-d-outer').innerText },
                     { line: true },
-                    { label: "Outer Ring Spacing d₂:", value: document.getElementById('stat-d-outer').innerText },
-                    { label: "% Error (Outer):", value: document.getElementById('stat-err-outer').innerText, isBadge: true },
+                    { label: 'Accepted d₁₀:', value: '0.213 nm' },
+                    { label: 'Accepted d₁₁:', value: '0.123 nm' }
                 ]
             };
         }
 
         // --- DATA PERSISTENCE & UNSAVED STATE ---
         function gatherData() {
-            const data = { L: document.getElementById('tube-L').value, rows: [] };
-            document.querySelectorAll('#diff-body tr').forEach(r => {
+            const data = { params: {}, trials: [] };
+            data.params.L = document.getElementById('param-L').value;
+            data.params.omega = document.getElementById('param-omega').value;
+            
+            document.querySelectorAll('#meas-body tr').forEach(r => {
                 const i = r.querySelectorAll('input'); 
-                data.rows.push({ v: i[0].value, sin: i[1].value, din: i[2].value, sout: i[3].value, dout: i[4].value });
+                data.trials.push({ v: i[0].value, si: i[1].value, so: i[2].value });
             });
             return data;
         }
@@ -678,16 +667,18 @@
         }
 
         function loadData(sourceData) {
-            document.getElementById('diff-body').innerHTML = '';
+            document.getElementById('meas-body').innerHTML = '';
 
             if(sourceData) {
-                if(sourceData.L) document.getElementById('tube-L').value = sourceData.L;
-                
-                if(sourceData.rows && sourceData.rows.length) {
-                    sourceData.rows.forEach(d => addDiffractionRow(d.v, d.sin, d.din, d.sout, d.dout));
-                } else populateDefaults();
+                if(sourceData.params) {
+                    if(sourceData.params.L) document.getElementById('param-L').value = sourceData.params.L;
+                    if(sourceData.params.omega) document.getElementById('param-omega').value = sourceData.params.omega;
+                }
+                if(sourceData.trials && sourceData.trials.length) sourceData.trials.forEach(d => addMeasurementRow(d.v, d.si, d.so));
+                else populateDefaults();
             } else {
-                document.getElementById('tube-L').value = '0.135';
+                document.getElementById('param-L').value = '125';
+                document.getElementById('param-omega').value = '2';
                 populateDefaults();
             }
             updateCalculations();
@@ -708,8 +699,8 @@
                         inputs[index + 1].focus(); 
                     } else {
                         const tbody = e.target.closest('tbody');
-                        if(tbody && tbody.id === 'diff-body') {
-                            addDiffractionRow();
+                        if(tbody && tbody.id === 'meas-body') {
+                            addMeasurementRow();
                             setTimeout(() => {
                                 const newInputs = Array.from(document.querySelectorAll('section input[type="number"]'));
                                 if(newInputs.length > inputs.length) newInputs[index + 1].focus();
@@ -751,7 +742,7 @@
             const dataStr = JSON.stringify(gatherData());
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([dataStr], {type: 'application/json'}));
-            a.download = 'phys43_lab11_diffraction.json';
+            a.download = 'phys43_lab11_electrondiffraction.json';
             document.body.appendChild(a); a.click(); document.body.removeChild(a);
             markAsSaved(); 
         });
@@ -814,7 +805,7 @@
             ctx.drawImage(chartCanvas, 0, 120);
 
             let currentY = 1250;
-            ctx.beginPath(); ctx.moveTo(150, currentY); ctx.lineTo(1770, currentY); ctx.lineWidth = 4; ctx.strokeStyle = '#39ff14'; ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(150, currentY); ctx.lineTo(1770, currentY); ctx.lineWidth = 4; ctx.strokeStyle = '#00b3cc'; ctx.stroke();
             currentY += 70;
 
             stats.forEach(item => {
@@ -825,10 +816,10 @@
                     ctx.textAlign = 'right';
                     if (item.isBadge) {
                         ctx.font = 'bold 32px sans-serif'; const w = ctx.measureText(item.value).width;
-                        ctx.fillStyle = '#eafaea'; ctx.fillRect(1720 - w - 40, currentY - 40, w + 40, 52);
-                        ctx.fillStyle = '#2eb80f'; ctx.fillText(item.value, 1720 - 20, currentY);
+                        ctx.fillStyle = '#e6f7ff'; ctx.fillRect(1720 - w - 40, currentY - 40, w + 40, 52);
+                        ctx.fillStyle = '#00b3cc'; ctx.fillText(item.value, 1720 - 20, currentY);
                     } else {
-                        ctx.font = 'bold 42px monospace'; ctx.fillStyle = '#2eb80f'; ctx.fillText(item.value, 1720, currentY);
+                        ctx.font = 'bold 42px monospace'; ctx.fillStyle = '#00b3cc'; ctx.fillText(item.value, 1720, currentY);
                     }
                     currentY += 70;
                 } else if (item.explain) {
